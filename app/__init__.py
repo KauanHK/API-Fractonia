@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 from flask_migrate import Migrate
 from config import Config
-from .db import db
+from .db import db, insert_data_command
 from .auth import auth_bp
 from .routes import routes_bp
 
@@ -18,6 +18,7 @@ def create_app(config_cls = Config) -> Flask:
 
     db.init_app(app)
     migrate.init_app(app, db)
+    app.cli.add_command(insert_data_command)
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(routes_bp)

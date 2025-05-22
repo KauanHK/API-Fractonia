@@ -14,10 +14,12 @@ class Player(db.Model):
     password_hash = db.Column(db.String(128), nullable = False)
     level = db.Column(db.Integer, default = 1)
     health = db.Column(db.Integer, default = 100)
-    current_phase = db.Column(db.Integer, nullable = False, default = 1)
     total_time = db.Column(db.Float, default = 0)
-    saved_at = db.Column(db.DateTime, default = datetime.datetime.now(datetime.UTC))
-    create_at = db.Column(db.DateTime, default = datetime.datetime.now(datetime.UTC))
+    saved_at = db.Column(db.DateTime, default = datetime.datetime.now)
+    create_at = db.Column(db.DateTime, default = datetime.datetime.now)
+    
+    current_phase_id = db.Column(db.Integer, db.ForeignKey('phase.id'), nullable = False, default = 1)
+    current_phase = db.relationship('Phase', backref = 'players')
 
     def __init__(
         self,
@@ -41,7 +43,8 @@ class Player(db.Model):
             'total_time': self.total_time,
             'saved_at': self.saved_at,
             'create_at': self.create_at,
-            'items': [item.to_dict() for item in PlayerItem.query.filter(PlayerItem.player_id == self.id)]
+            'items': [item.to_dict() for item in PlayerItem.query.filter(PlayerItem.player_id == self.id)],
+            'current_phase': self.current_phase.to_dict()
         }
     
     def set_password(self, password: str):
@@ -161,5 +164,42 @@ class Boss(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String(100), nullable = False)
 
+    def __init__(self, name: str) -> None:
+        self.name = name
+    
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            'id': self.id,
+            'name': self.id
+        }
+
     def __repr__(self):
         return f'<Boss {self.name}>'
+
+
+class Phase(db.Model):
+
+    __tablename__ = 'phase'
+
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String(30), nullable = False)
+    description = db.Column(db.String(255))
+
+    boss_id = db.Column(db.Integer, db.ForeignKey('boss.id'), nullable = True)
+    boss = db.relationship('Boss', backref = 'phases')
+
+    def __init__(self, name: str, description: str = '', boss_id: int = None):
+        self.name = name
+        self.description = description
+        self.boss_id = boss_id
+
+    def to_dict(self) -> dict:
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'boss': self.boss.name if self.boss else None
+        }
+
+    def __repr__(self):
+        return f'<Phase {self.name}>'
