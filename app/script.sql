@@ -11,14 +11,17 @@ INSERT INTO item (name, description, power, acquired_at, rarity_id) VALUES
 
 
 INSERT INTO boss (name) VALUES
-    ('Dragão Vermelho'),
-    ('Rei Esqueleto');
+    ('Metadius'),
+    ('Boss2'),
+    ('Boss3'),
+    ('Boss4'),
+    ('Boss5');
 
 
 INSERT INTO phase (name, description, boss_id) VALUES
-    ('Floresta Sombria', 'Uma floresta densa cheia de perigos.', NULL),
-    ('Caverna do Dragão', 'Lar do temível Dragão Vermelho.', 1),
-    ('Castelo Assombrado', 'Fortaleza do Rei Esqueleto.', 2);
+    ('Floresta Sombria', 'Uma floresta densa cheia de perigos.', 1),
+    ('Caverna do Dragão', 'Lar do temível Dragão Vermelho.', 2),
+    ('Castelo Assombrado', 'Fortaleza do Rei Esqueleto.', 3);
 
 
 INSERT INTO player_item (player_id, item_id) VALUES
