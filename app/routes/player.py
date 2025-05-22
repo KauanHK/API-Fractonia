@@ -2,6 +2,7 @@ from flask import Blueprint, request
 from werkzeug.security import generate_password_hash
 from ..db import db
 from ..models import Player, PlayerItem, Item
+from ..auth import token_required
 
 
 bp = Blueprint('player', __name__, url_prefix = '/player')
@@ -31,13 +32,19 @@ def new_player():
 
 
 @bp.route('/<int:id>')
-def player(id: int):
+@token_required
+def player(current_user: int, id: int):
+
+    return {
+        'current_user': current_user
+    }
+
     return Player.query.get_or_404(id).to_dict()
 
 
 @bp.route('/<int:id>/items')
 def player_items(id: int):
-    ...
+    return [item.to_dict() for item in PlayerItem.query.filter(PlayerItem.player_id == id)]
 
 
 @bp.route('/<int:id>/new-item')

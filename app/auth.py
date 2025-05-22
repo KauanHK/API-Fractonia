@@ -1,8 +1,9 @@
 import datetime
 import jwt
-
+from .models import Player
 from functools import wraps
 from flask import Blueprint, request, jsonify, current_app
+from werkzeug.security import check_password_hash
 from typing import Callable
 
 
@@ -16,22 +17,29 @@ def login():
     username = user_data.get('username')
     password = user_data.get('password')
 
-    if username == 'admin' and password == 'password':
-        token = jwt.encode(
-            {
-                'user': username,
-                'exp': datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes = 30)
-            },
-            current_app.config["SECRET_KEY"],
-            algorithm = "HS256"
-        )
+    player = Player.query.filter(Player.username == username).one_or_none()
+    if player is None:
+        return {
+            'message': 'Invalid username'
+        }
     
-        return jsonify({
-            "token": token
-        }), 200
+    if not check_password_hash(player.password_hash, password):
+        return {
+            'message': 'Invalid username/password'
+        }
+
+    token = jwt.encode(
+        {
+            'id': player.id,
+            'username': username,
+            'exp': datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes = 30)
+        },
+        current_app.config["SECRET_KEY"],
+        algorithm = "HS256"
+    )
     
     return jsonify({
-        "message": "Invalid username/password"
+        "token": token
     }), 401
 
 
@@ -50,7 +58,7 @@ def token_required(f: Callable):
         
         try:
             data = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms = ['HS256'])
-            current_user = data['user']
+            current_user_id = data['id']
         except jwt.ExpiredSignatureError:
             return jsonify({
                 "message": "Token has expired!"
@@ -60,7 +68,7 @@ def token_required(f: Callable):
                 "message": "Invalid token!"
             }), 401
         
-        return f(current_user, *args, **kwargs)
+        return f(current_user_id, *args, **kwargs)
 
     return decorated
     
