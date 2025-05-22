@@ -1,6 +1,10 @@
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import text
 from .db import db
+import click
+import os
 import datetime
+from config import BASE_DIR
 from typing import Any
 
 
@@ -16,7 +20,7 @@ class Player(db.Model):
     health = db.Column(db.Integer, default = 100)
     total_time = db.Column(db.Float, default = 0)
     saved_at = db.Column(db.DateTime, default = datetime.datetime.now)
-    create_at = db.Column(db.DateTime, default = datetime.datetime.now)
+    created_at = db.Column(db.DateTime, default = datetime.datetime.now)
     
     current_phase_id = db.Column(db.Integer, db.ForeignKey('phase.id'), nullable = False, default = 1)
     current_phase = db.relationship('Phase', backref = 'players')
@@ -42,7 +46,7 @@ class Player(db.Model):
             'current_phase': self.current_phase,
             'total_time': self.total_time,
             'saved_at': self.saved_at,
-            'create_at': self.create_at,
+            'created_at': self.created_at,
             'items': [item.to_dict() for item in PlayerItem.query.filter(PlayerItem.player_id == self.id)],
             'current_phase': self.current_phase.to_dict()
         }
@@ -136,9 +140,7 @@ class PlayerItem(db.Model):
         self.item_id = item_id
     
     def to_dict(self) -> dict[str, Any]:
-        return {
-            'item': self.item.to_dict()
-        }
+        return self.item.to_dict()
 
 
 class LevelProgress(db.Model):
@@ -170,7 +172,7 @@ class Boss(db.Model):
     def to_dict(self) -> dict[str, Any]:
         return {
             'id': self.id,
-            'name': self.id
+            'name': self.name
         }
 
     def __repr__(self):
@@ -198,8 +200,31 @@ class Phase(db.Model):
             'id': self.id,
             'name': self.name,
             'description': self.description,
-            'boss': self.boss.name if self.boss else None
+            'boss': self.boss.to_dict()
         }
 
     def __repr__(self):
         return f'<Phase {self.name}>'
+
+
+@click.command('insert-data')
+def insert_data_command():
+
+    with open(os.path.join(BASE_DIR, 'app', 'script.sql'), 'rb') as f:
+        sql_script = f.read().decode()
+    
+    statements = sql_script.strip().split(';')
+
+    with db.session.begin():
+        for statement in statements:
+            if statement.strip():
+                db.session.execute(text(statement))
+
+    usernames = ['kauan', 'martin', 'tiago', 'william', 'bob']
+    
+    for username in usernames:
+        player = Player(username, f'{username}@gmail.com', generate_password_hash('123'))
+        db.session.add(player)
+    
+    db.session.commit()
+
