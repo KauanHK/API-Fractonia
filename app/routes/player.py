@@ -33,11 +33,12 @@ def new_player():
 
 @bp.route('/<int:id>')
 @token_required
-def player(current_user: int, id: int):
+def player(current_user_id: int, id: int):
 
-    return {
-        'current_user': current_user
-    }
+    if id != current_user_id:
+        return {
+            'message': "You don't have access to this page"
+        }, 403
 
     return Player.query.get_or_404(id).to_dict()
 
