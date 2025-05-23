@@ -220,7 +220,7 @@ def insert_data_command():
             if statement.strip():
                 db.session.execute(text(statement))
 
-    usernames = ['kauan', 'martin', 'tiago', 'william', 'bob']
+    usernames = ['admin', 'kauan', 'martin', 'tiago', 'william', 'bob']
     
     for username in usernames:
         player = Player(username, f'{username}@gmail.com', generate_password_hash('123'))

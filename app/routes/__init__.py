@@ -1,11 +1,11 @@
 from flask import Blueprint
-from . import player, items
+from . import item, player
 
 
 routes_bp = Blueprint('routes', __name__)
 
 routes_bp.register_blueprint(player.bp)
-routes_bp.register_blueprint(items.bp)
+routes_bp.register_blueprint(item.bp)
 
 
 __all__ = [

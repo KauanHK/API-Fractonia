@@ -65,4 +65,9 @@ def create_app(config_cls = Config) -> Flask:
             "message": 'Service unavailable 503 :('
         }), 503
 
+
+    for rule in app.url_map.iter_rules():
+        methods = ','.join(rule.methods)
+        print(rule.rule)
+
     return app

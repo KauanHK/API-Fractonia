@@ -2,18 +2,20 @@ from flask import Blueprint, request
 from werkzeug.security import generate_password_hash
 from ..db import db
 from ..models import Player, PlayerItem, Item
-from ..auth import token_required
+from ..auth import token_required, validate_access, admin_required
 
 
 bp = Blueprint('player', __name__, url_prefix = '/player')
 
 
 @bp.route('/all')
+@admin_required
 def index():
     return [player.to_dict() for player in Player.query.all()]
 
 
 @bp.route('/new', methods = ['POST'])
+@admin_required
 def new_player():
     
     player_json = request.get_json()
@@ -34,21 +36,20 @@ def new_player():
 @bp.route('/<int:id>')
 @token_required
 def player(current_user_id: int, id: int):
-
-    if id != current_user_id:
-        return {
-            'message': "You don't have access to this page"
-        }, 403
+    validate_access(current_user_id, id)
 
     return Player.query.get_or_404(id).to_dict()
 
 
 @bp.route('/<int:id>/items')
-def player_items(id: int):
+@token_required
+def player_items(current_user_id: int, id: int):
+    validate_access(current_user_id, id)
     return [item.to_dict() for item in PlayerItem.query.filter(PlayerItem.player_id == id)]
 
 
 @bp.route('/<int:id>/new-item')
+@token_required
 def new_item(id: int):
 
     item_id = request.json()['item_id']
