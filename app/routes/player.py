@@ -1,8 +1,8 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash
 from ..db import db
 from ..models import Player, PlayerItem, Item, LevelProgress
-from ..auth import token_required, validate_access, admin_required
+from ..auth import token_required, admin_required
 
 
 bp = Blueprint('player', __name__, url_prefix = '/player')
@@ -19,7 +19,6 @@ def index():
 def new_player():
     
     player_json = request.get_json()
-    print(player_json)
 
     player = Player(
         username = player_json['username'],
@@ -33,10 +32,49 @@ def new_player():
     return player.to_dict()
 
 
+@bp.route('/<int:id>/update', methods=['PUT'])
+@token_required
+def update_player(id: int):
+
+    player = Player.query.get_or_404(id)
+
+    data_json = request.get_json()
+
+    attributes = [
+        'username',
+        'email',
+        'level',
+        'health',
+        'total_time',
+        'saved_at',
+        'current_phase_id'
+    ]
+
+    for attr in attributes:
+        if data_json.get(attr):
+            setattr(player, attr, data_json[attr])
+
+    db.session.commit()
+
+    return jsonify({'message': f'Player {id} updated successfully.', 'player': player.to_dict()}), 200
+
+
+@bp.route('/<int:id>/delete', methods = ['DELETE'])
+@token_required
+def delete_player(id: int):
+
+    player = Player.query.get_or_404(id)
+    db.session.delete(player)
+    db.session.commit()
+
+    return jsonify({
+        'message': f'Player {id} deleted successfully.'
+    })
+
+
 @bp.route('/<int:id>')
 @token_required
 def player(id: int):
-
     return Player.query.get_or_404(id).to_dict()
 
 

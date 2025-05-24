@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from ..db import db
 from ..models import Phase
 
@@ -31,3 +31,40 @@ def new_item():
     db.session.commit()
 
     return phase.to_dict()
+
+
+@bp.route('/<int:id>/update', methods=['PUT'])
+def update_phase(id: int):
+
+    phase = Phase.query.get_or_404(id)
+
+    data_json = request.get_json()
+
+    attributes = [
+        'name',
+        'description',
+        'boss_id'
+    ]
+
+    for attr in attributes:
+        if data_json.get(attr):
+            setattr(phase, attr, data_json[attr])
+
+    db.session.commit()
+
+    return jsonify({
+        'message': f'Phase {id} updated successfully.',
+        'phase': phase.to_dict()
+    }), 200
+
+
+@bp.route('/<int:id>/delete', methods = ['DELETE'])
+def delete_phase(id: int):
+
+    phase = Phase.query.get_or_404(id)
+    db.session.delete(phase)
+    db.session.commit()
+
+    return jsonify({
+        'message': f'Phase {id} deleted successfully.'
+    })
