@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 from werkzeug.security import generate_password_hash
 from ..db import db
-from ..models import Player, PlayerItem, Item
+from ..models import Player, PlayerItem, Item, LevelProgress
 from ..auth import token_required, validate_access, admin_required
 
 
@@ -67,3 +67,20 @@ def new_item(id: int):
     db.session.commit()
 
     return player_item.to_dict()
+
+
+@bp.route('/<int:id>/stats')
+@token_required
+def stats(current_user_id: int, id: int):
+
+    validate_access(current_user_id, id)
+    Player.query.get_or_404(id)
+
+    player_stats = LevelProgress.query.filter(LevelProgress.player_id == id).all()
+
+    stats_json = []
+    for stat in player_stats:
+        stats_json.append(stat.to_dict())
+    
+    return stats_json
+    

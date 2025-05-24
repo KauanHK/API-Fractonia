@@ -13,23 +13,20 @@ def items():
 
 @bp.route('/<int:id>')
 def item(id: int):
-    return Item.query.get_or_404(id)
+    return Item.query.get_or_404(id).to_dict()
 
 
 @bp.route('/new', methods = ['POST'])
 def new_item():
     
-    print('starting')
     item_json = request.get_json()
 
-    print('success json')
     item = Item(
         name = item_json['name'],
         description = item_json['description'],
         rarity_id = item_json['rarity_id'],
         power = item_json.get('power')
     )
-    print(item)
 
     db.session.add(item)
     db.session.commit()

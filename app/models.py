@@ -70,6 +70,11 @@ class Rarity(db.Model):
     color = db.Column(db.String(20))
     description = db.Column(db.String(100))
 
+    def __init__(self, name: str, color: str, description: str = '') -> None:
+        self.name = name
+        self.color = color
+        self.description = description
+
     def to_dict(self) -> dict[str, Any]:
         return {
             'id': self.id,
@@ -115,7 +120,7 @@ class Item(db.Model):
             'description': self.description,
             'power': self.power,
             'acquired_at': self.acquired_at,
-            'rarity': self.rarity.name
+            'rarity': self.rarity.to_dict()
         }
 
 
@@ -148,15 +153,27 @@ class LevelProgress(db.Model):
     __tablename__ = 'level_progress'
 
     id = db.Column(db.Integer, primary_key = True)
-    player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable = False)
-    phase_number = db.Column(db.Integer, nullable = False)
     time_spent = db.Column(db.Float)
-    completed_at = db.Column(db.DateTime, default = datetime.datetime.now(datetime.UTC))
+    completed_at = db.Column(db.DateTime, default = datetime.datetime.now)
+    
+    player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable = False)
+    phase_id = db.Column(db.Integer, db.ForeignKey('phase.id'), nullable = False)
 
     player = db.relationship('Player', backref = 'level_progress')
+    phase = db.relationship('Phase', backref = 'level_progress')
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            'id': self.id,
+            'player': self.player.to_dict(),
+            'phase': self.phase.to_dict(),
+            'time_spent': self.time_spent,
+            'completed_at': self.completed_at
+        }
 
     def __repr__(self):
-        return f'<LevelProgress Player {self.player_id} Fase {self.phase_number}>'
+        return f'<LevelProgress Player {self.player_id} Phase {self.phase_id}>'
+
 
 
 class Boss(db.Model):

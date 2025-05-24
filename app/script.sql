@@ -12,16 +12,18 @@ INSERT INTO item (name, description, power, acquired_at, rarity_id) VALUES
 
 INSERT INTO boss (name) VALUES
     ('Metadius'),
-    ('Boss2'),
-    ('Boss3'),
-    ('Boss4'),
-    ('Boss5');
+    ('Subtracius'),
+    ('Fracthor'),
+    ('Equilíbrio'),
+    ('Lorde Inverso');
 
 
 INSERT INTO phase (name, description, boss_id) VALUES
-    ('Floresta Sombria', 'Uma floresta densa cheia de perigos.', 1),
-    ('Caverna do Dragão', 'Lar do temível Dragão Vermelho.', 2),
-    ('Castelo Assombrado', 'Fortaleza do Rei Esqueleto.', 3);
+    ('O mundo das divisões', 'O mundo das divisões', 1),
+    ('O portal da Harmonia', 'Frações na Prática: Adição e Subtração', 2),
+    ('O Castelo das Frações', 'Frações: Multiplicação e Divisão', 3),
+    ('A Torre das Equivalências', 'Comparação e equivalência de frações', 4),
+    ('O Templo da Matemagia', ' Integração dos conceitos anteriores', 5);
 
 
 INSERT INTO player_item (player_id, item_id) VALUES
@@ -30,7 +32,7 @@ INSERT INTO player_item (player_id, item_id) VALUES
     (2, 3);
 
 
-INSERT INTO level_progress (player_id, phase_number, time_spent, completed_at) VALUES
+INSERT INTO level_progress (player_id, phase_id, time_spent, completed_at) VALUES
     (1, 1, 60.0, CURRENT_TIMESTAMP),
     (1, 2, 30.5, CURRENT_TIMESTAMP),
     (2, 1, 90.0, CURRENT_TIMESTAMP);
