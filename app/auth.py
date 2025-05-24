@@ -43,8 +43,10 @@ def login():
     }), 401
 
 
-def get_current_user_id(token: str) -> int:
+def get_current_user_id(token: str | None = None) -> int:
 
+    if token is None:
+        token = get_token()
     try:
         data = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms = ['HS256'])
         return data['id']
@@ -67,11 +69,11 @@ def get_token() -> str:
 def token_required(f: Callable):
 
     @wraps(f)
-    def decorated(*args, **kwargs):
+    def decorated(id: int, *args, **kwargs):
 
-        token = get_token()
-        current_user_id = get_current_user_id(token)
-        return f(current_user_id, *args, **kwargs)
+        current_user_id = get_current_user_id()
+        validate_access(current_user_id, id)
+        return f(id, *args, **kwargs)
 
     return decorated
 
@@ -81,8 +83,7 @@ def admin_required(f: Callable):
     @wraps(f)
     def decorated(*args, **kwargs):
         
-        token = get_token()
-        current_user_id = get_current_user_id(token)
+        current_user_id = get_current_user_id()
         
         if not is_admin(current_user_id):
             abort(403, "You don't have access to this page")
@@ -93,7 +94,7 @@ def admin_required(f: Callable):
 
 
 def is_admin(user_id: int):
-    player = Player.query.get(user_id)
+    player = Player.query.get_or_404(user_id)
     return player.username == 'admin'
 
 

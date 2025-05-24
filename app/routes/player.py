@@ -35,16 +35,14 @@ def new_player():
 
 @bp.route('/<int:id>')
 @token_required
-def player(current_user_id: int, id: int):
-    validate_access(current_user_id, id)
+def player(id: int):
 
     return Player.query.get_or_404(id).to_dict()
 
 
 @bp.route('/<int:id>/items')
 @token_required
-def player_items(current_user_id: int, id: int):
-    validate_access(current_user_id, id)
+def player_items(id: int):
     return [item.to_dict() for item in PlayerItem.query.filter(PlayerItem.player_id == id)]
 
 
@@ -71,9 +69,8 @@ def new_item(id: int):
 
 @bp.route('/<int:id>/stats')
 @token_required
-def stats(current_user_id: int, id: int):
+def stats(id: int):
 
-    validate_access(current_user_id, id)
     Player.query.get_or_404(id)
 
     player_stats = LevelProgress.query.filter(LevelProgress.player_id == id).all()
