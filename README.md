@@ -75,27 +75,36 @@ http://127.0.0.1:5000/
 
 ## 📚 Estrutura de endpoints principais
 
-| Método   | Endpoint                  |
-| -------- | ------------------------- |
-| POST     | /auth/login               |
-| GET      | /boss/[id]                |
-| GET      | /boss/all                 |
-| POST     | /boss/new                 |
-| GET      | /item/[id]                |
-| GET      | /item/all                 |
-| POST     | /item/new                 |
-| POST     | /phase/new                |
-| GET      | /phase/[id]               |
-| GET      | /phase/all                |
-| GET      | /player/all               |
-| POST     | /player/[id]/new-item     |
-| POST     | /player/new               |
-| GET      | /player/[id]              |
-| GET      | /player/[id]/items        |
-| GET      | /player/[id]/stats        |
-| POST     | /rarity/new               |
-| GET      | /rarity/all               |
-| GET      | /rarity/[id]              |
+| Methods | Rule                             |
+| ------- | -------------------------------- |
+| POST    | /auth/login                      |
+| GET     | /boss/<int:id>                   |
+| GET     | /boss/all                        |
+| DELETE  | /boss/<int:id>/delete            |
+| POST    | /boss/new                        |
+| PUT     | /boss/<int:id>/update            |
+| DELETE  | /item/<int:id>/delete            |
+| GET     | /item/<int:id>                   |
+| GET     | /item/all                        |
+| POST    | /item/new                        |
+| PUT     | /item/<int:id>/update            |
+| DELETE  | /phase/<int:id>/delete           |
+| POST    | /phase/new                       |
+| GET     | /phase/<int:id>                  |
+| GET     | /phase/all                       |
+| PUT     | /phase/<int:id>/update           |
+| DELETE  | /player/<int:id>/delete          |
+| GET     | /player/all                      |
+| POST    | /player/<int:id>/new-item        |
+| POST    | /player/new                      |
+| GET     | /player/<int:id>                 |
+| GET     | /player/<int:id>/items           |
+| GET     | /player/<int:id>/stats           |
+| PUT     | /player/<int:id>/update          |
+| POST    | /rarity/new                      |
+| GET     | /rarity/all                      |
+| GET     | /rarity/<int:id>                 |
+
 
 ---
 
