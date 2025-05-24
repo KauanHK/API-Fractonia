@@ -75,16 +75,27 @@ http://127.0.0.1:5000/
 
 ## 📚 Estrutura de endpoints principais
 
-| Endpoint           | Método |
-| ------------------ | ------ |
-| `/auth/login`      | POST   |
-| `/player/all`      | GET    |
-| `/player/<int:id>` | GET    |
-| `/item/all`        | GET    |
-| `/phase/all`       | GET    |
-| `/boss/all`        | GET    |
-| `/rarity/all`      | GET    |
-| ...                | ...    |
+| Método   | Endpoint                  |
+| -------- | ------------------------- |
+| POST     | /auth/login               |
+| GET      | /boss/[id]                |
+| GET      | /boss/all                 |
+| POST     | /boss/new                 |
+| GET      | /item/[id]                |
+| GET      | /item/all                 |
+| POST     | /item/new                 |
+| POST     | /phase/new                |
+| GET      | /phase/[id]               |
+| GET      | /phase/all                |
+| GET      | /player/all               |
+| POST     | /player/[id]/new-item     |
+| POST     | /player/new               |
+| GET      | /player/[id]              |
+| GET      | /player/[id]/items        |
+| GET      | /player/[id]/stats        |
+| POST     | /rarity/new               |
+| GET      | /rarity/all               |
+| GET      | /rarity/[id]              |
 
 ---
 
