@@ -175,7 +175,6 @@ class LevelProgress(db.Model):
         return f'<LevelProgress Player {self.player_id} Phase {self.phase_id}>'
 
 
-
 class Boss(db.Model):
 
     __tablename__ = 'boss'
@@ -244,4 +243,3 @@ def insert_data_command():
         db.session.add(player)
     
     db.session.commit()
-

@@ -48,7 +48,7 @@ def player_items(current_user_id: int, id: int):
     return [item.to_dict() for item in PlayerItem.query.filter(PlayerItem.player_id == id)]
 
 
-@bp.route('/<int:id>/new-item')
+@bp.route('/<int:id>/new-item', methods = ['POST'])
 @token_required
 def new_item(id: int):
 

@@ -5,6 +5,7 @@ from .db import db
 from .models import insert_data_command
 from .auth import auth_bp
 from .routes import routes_bp
+import click
 
 
 migrate = Migrate()
@@ -65,9 +66,5 @@ def create_app(config_cls = Config) -> Flask:
             "message": 'Service unavailable 503 :('
         }), 503
 
-
-    for rule in app.url_map.iter_rules():
-        methods = ','.join(rule.methods)
-        print(rule.rule)
-
+    
     return app
