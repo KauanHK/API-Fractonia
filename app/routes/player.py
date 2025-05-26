@@ -88,7 +88,7 @@ def player_items(id: int):
 @token_required
 def new_item(id: int):
 
-    item_id = request.json()['item_id']
+    item_id = request.json['item_id']
 
     # Verificar se existem
     Player.query.get_or_404(id)
