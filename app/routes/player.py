@@ -5,16 +5,16 @@ from ..models import Player, PlayerItem, Item, LevelProgress
 from ..auth import token_required, admin_required
 
 
-bp = Blueprint('player', __name__, url_prefix = '/player')
+bp = Blueprint('players', __name__, url_prefix = '/players')
 
 
-@bp.route('/all')
+@bp.route('/')
 @admin_required
 def index():
     return [player.to_dict() for player in Player.query.all()]
 
 
-@bp.route('/new', methods = ['POST'])
+@bp.route('/', methods = ['POST'])
 @admin_required
 def new_player():
     
@@ -32,7 +32,7 @@ def new_player():
     return player.to_dict()
 
 
-@bp.route('/<int:id>/update', methods=['PUT'])
+@bp.route('/<int:id>', methods=['PUT'])
 @token_required
 def update_player(id: int):
 
@@ -59,7 +59,7 @@ def update_player(id: int):
     return jsonify({'message': f'Player {id} updated successfully.', 'player': player.to_dict()}), 200
 
 
-@bp.route('/<int:id>/delete', methods = ['DELETE'])
+@bp.route('/<int:id>', methods = ['DELETE'])
 @token_required
 def delete_player(id: int):
 
@@ -84,7 +84,7 @@ def player_items(id: int):
     return [item.to_dict() for item in PlayerItem.query.filter(PlayerItem.player_id == id)]
 
 
-@bp.route('/<int:id>/new-item', methods = ['POST'])
+@bp.route('/<int:id>/items', methods = ['POST'])
 @token_required
 def new_item(id: int):
 

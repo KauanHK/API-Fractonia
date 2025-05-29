@@ -3,10 +3,10 @@ from ..db import db
 from ..models import Item
 
 
-bp = Blueprint('item', __name__, url_prefix = '/item')
+bp = Blueprint('items', __name__, url_prefix = '/items')
 
 
-@bp.route('/all')
+@bp.route('/')
 def items():
     return [item.to_dict() for item in Item.query.all()]
 
@@ -16,7 +16,7 @@ def item(id: int):
     return Item.query.get_or_404(id).to_dict()
 
 
-@bp.route('/new', methods = ['POST'])
+@bp.route('/', methods = ['POST'])
 def new_item():
     
     item_json = request.get_json()
@@ -34,7 +34,7 @@ def new_item():
     return item.to_dict()
 
 
-@bp.route('/<int:id>/update', methods=['PUT'])
+@bp.route('/<int:id>', methods=['PUT'])
 def update_item(id: int):
 
     item = Item.query.get_or_404(id)
@@ -61,7 +61,7 @@ def update_item(id: int):
     }), 200
 
 
-@bp.route('/<int:id>/delete', methods = ['DELETE'])
+@bp.route('/<int:id>', methods = ['DELETE'])
 def delete_item(id: int):
 
     item = Item.query.get_or_404(id)

@@ -3,10 +3,10 @@ from ..db import db
 from ..models import Phase
 
 
-bp = Blueprint('phase', __name__, url_prefix = '/phase')
+bp = Blueprint('phases', __name__, url_prefix = '/phases')
 
 
-@bp.route('/all')
+@bp.route('/')
 def phases():
     return [phase.to_dict() for phase in Phase.query.all()]
 
@@ -16,7 +16,7 @@ def phase(id: int):
     return Phase.query.get_or_404(id).to_dict()
 
 
-@bp.route('/new', methods = ['POST'])
+@bp.route('/', methods = ['POST'])
 def new_item():
     
     phase_json = request.get_json()
@@ -33,7 +33,7 @@ def new_item():
     return phase.to_dict()
 
 
-@bp.route('/<int:id>/update', methods=['PUT'])
+@bp.route('/<int:id>', methods=['PUT'])
 def update_phase(id: int):
 
     phase = Phase.query.get_or_404(id)
@@ -58,7 +58,7 @@ def update_phase(id: int):
     }), 200
 
 
-@bp.route('/<int:id>/delete', methods = ['DELETE'])
+@bp.route('/<int:id>', methods = ['DELETE'])
 def delete_phase(id: int):
 
     phase = Phase.query.get_or_404(id)

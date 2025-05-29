@@ -3,10 +3,10 @@ from ..db import db
 from ..models import Boss
 
 
-bp = Blueprint('boss', __name__, url_prefix = '/boss')
+bp = Blueprint('bosses', __name__, url_prefix = '/bosses')
 
 
-@bp.route('/all')
+@bp.route('/')
 def bosses():
     return [boss.to_dict() for boss in Boss.query.all()]
 
@@ -16,7 +16,7 @@ def boss(id: int):
     return Boss.query.get_or_404(id).to_dict()
 
 
-@bp.route('/new', methods = ['POST'])
+@bp.route('/', methods = ['POST'])
 def new_boss():
     
     boss_json = request.get_json()
@@ -31,7 +31,7 @@ def new_boss():
     return boss.to_dict()
 
 
-@bp.route('/<int:id>/update', methods=['PUT'])
+@bp.route('/<int:id>', methods=['PUT'])
 def update_boss(id: int):
 
     boss = Boss.query.get_or_404(id)
@@ -54,7 +54,7 @@ def update_boss(id: int):
     }), 200
 
 
-@bp.route('/<int:id>/delete', methods = ['DELETE'])
+@bp.route('/<int:id>', methods = ['DELETE'])
 def delete_boss(id: int):
 
     boss = Boss.query.get_or_404(id)
