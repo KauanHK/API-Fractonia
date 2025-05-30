@@ -1,0 +1,57 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "API de Autenticação",
+    "version": "1.0.0",
+    "description": "API para login, registro e renovação de token"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:5000",
+      "description": "Servidor local",
+      "variables": {
+        "host": {
+          "default": "localhost",
+          "description": "Host do servidor"
+        },
+        "port": {
+          "default": "5000",
+          "description": "Porta do servidor"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Login do usuário",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "example": "user123"
+                  },
+                  "password": {
+                    "example": "senha123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login bem sucedido"
+          },
+          "401": {
+            "description": "Credenciais inválidas"
+          }
+        }
+      }
+    }
+  }
+}

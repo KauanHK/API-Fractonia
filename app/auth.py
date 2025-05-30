@@ -40,7 +40,7 @@ def login():
     
     return jsonify({
         "token": token
-    }), 401
+    })
 
 
 def get_current_user_id(token: str | None = None) -> int:
