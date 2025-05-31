@@ -1,113 +1,489 @@
 {
-  "openapi": "3.0.3",
-  "info": {
-    "title": "API de Autenticação",
-    "version": "1.0.0",
-    "description": "API para login, registro e renovação de token"
-  },
-  "components": {
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
-      }
-    }
-  },
-  "servers": [
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-05-31T12:00:00.000Z",
+  "__export_source": "manual",
+  "resources": [
     {
-      "url": "http://127.0.0.1:5000",
-      "description": "Servidor local",
-      "variables": {
-        "host": {
-          "default": "localhost",
-          "description": "Host do servidor"
-        },
-        "port": {
-          "default": "5000",
-          "description": "Porta do servidor"
-        }
-      }
-    }
-  ],
-  "paths": {
-    "/auth/login": {
-      "post": {
-        "summary": "Login do usuário",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "username": {
-                    "example": "user123"
-                  },
-                  "password": {
-                    "example": "senha123"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Login bem sucedido"
-          },
-          "401": {
-            "description": "Credenciais inválidas"
-          }
-        }
-      }
+      "_id": "wrk_123",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "name": "API Players",
+      "description": "",
+      "_type": "workspace"
     },
-    "/players": {
-      "get": {
-        "summary": "Dados de todos os players",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Login bem sucedido"
-          },
-          "401": {
-            "description": "Token inválido"
-          }
-        }
+    {
+      "_id": "env_123",
+      "parentId": "wrk_123",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:5000"
       },
-      "post": {
-        "summary": "Login do usuário",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "username": {
-                    "example": "user123"
-                  },
-                  "password": {
-                    "example": "senha123"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Login bem sucedido"
-          },
-          "401": {
-            "description": "Credenciais inválidas"
-          }
+      "_type": "environment"
+    },
+    {
+      "_id": "req_login",
+      "parentId": "wrk_123",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "POST",
+      "url": "{{ base_url }}/auth/login",
+      "name": "Login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"username\": \"admin\",\n  \"password\": \"admin\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
         }
-      }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "fld_players",
+      "parentId": "wrk_123",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "name": "Players",
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_list_players",
+      "parentId": "fld_players",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "GET",
+      "url": "{{ base_url }}/players/",
+      "name": "Listar Players",
+      "headers": [
+        {
+          "name": "x-access-token",
+          "value": "{{ _.response.body.token }}"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_create_player",
+      "parentId": "fld_players",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "POST",
+      "url": "{{ base_url }}/players/",
+      "name": "Criar Player",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-access-token",
+          "value": "{{ _.response.body.token }}"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_player",
+      "parentId": "fld_players",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "GET",
+      "url": "{{ base_url }}/players/1",
+      "name": "Obter Player",
+      "headers": [
+        {
+          "name": "x-access-token",
+          "value": "{{ _.response.body.token }}"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_update_player",
+      "parentId": "fld_players",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "PUT",
+      "url": "{{ base_url }}/players/1",
+      "name": "Atualizar Player",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-access-token",
+          "value": "{{ _.response.body.token }}"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"username\": \"updateduser\",\n  \"email\": \"updated@example.com\",\n  \"level\": 2,\n  \"health\": 80,\n  \"total_time\": 150.5,\n  \"current_phase_id\": 1\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_delete_player",
+      "parentId": "fld_players",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "DELETE",
+      "url": "{{ base_url }}/players/1",
+      "name": "Deletar Player",
+      "headers": [
+        {
+          "name": "x-access-token",
+          "value": "{{ _.response.body.token }}"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_player_items",
+      "parentId": "fld_players",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "GET",
+      "url": "{{ base_url }}/players/1/items",
+      "name": "Listar Itens do Player",
+      "headers": [
+        {
+          "name": "x-access-token",
+          "value": "{{ _.response.body.token }}"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_add_player_item",
+      "parentId": "fld_players",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "POST",
+      "url": "{{ base_url }}/players/1/items",
+      "name": "Adicionar Item ao Player",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-access-token",
+          "value": "{{ _.response.body.token }}"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"item_id\": 1\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_player_stats",
+      "parentId": "fld_players",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "GET",
+      "url": "{{ base_url }}/players/1/stats",
+      "name": "Estatísticas do Player",
+      "headers": [
+        {
+          "name": "x-access-token",
+          "value": "{{ _.response.body.token }}"
+        }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "fld_bosses",
+      "parentId": "wrk_123",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "name": "Bosses",
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_list_bosses",
+      "parentId": "fld_bosses",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "GET",
+      "url": "{{ base_url }}/boss/",
+      "name": "Listar Bosses",
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_boss",
+      "parentId": "fld_bosses",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "GET",
+      "url": "{{ base_url }}/boss/1",
+      "name": "Obter Boss",
+      "_type": "request"
+    },
+    {
+      "_id": "req_create_boss",
+      "parentId": "fld_bosses",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "POST",
+      "url": "{{ base_url }}/boss/",
+      "name": "Criar Boss",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Dragon King\"\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_update_boss",
+      "parentId": "fld_bosses",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "PUT",
+      "url": "{{ base_url }}/boss/1",
+      "name": "Atualizar Boss",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Updated Dragon King\"\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_delete_boss",
+      "parentId": "fld_bosses",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "DELETE",
+      "url": "{{ base_url }}/boss/1",
+      "name": "Deletar Boss",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_phases",
+      "parentId": "wrk_123",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "name": "Phases",
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_list_phases",
+      "parentId": "fld_phases",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "GET",
+      "url": "{{ base_url }}/phases/",
+      "name": "Listar Phases",
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_phase",
+      "parentId": "fld_phases",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "GET",
+      "url": "{{ base_url }}/phases/1",
+      "name": "Obter Phase",
+      "_type": "request"
+    },
+    {
+      "_id": "req_create_phase",
+      "parentId": "fld_phases",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "POST",
+      "url": "{{ base_url }}/phases/",
+      "name": "Criar Phase",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Forest Maze\",\n  \"description\": \"A dark and twisted maze\",\n  \"boss_id\": 1\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_update_phase",
+      "parentId": "fld_phases",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "PUT",
+      "url": "{{ base_url }}/phases/1",
+      "name": "Atualizar Phase",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Updated Forest Maze\",\n  \"description\": \"An even darker maze\",\n  \"boss_id\": 1\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_delete_phase",
+      "parentId": "fld_phases",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "DELETE",
+      "url": "{{ base_url }}/phases/1",
+      "name": "Deletar Phase",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_items",
+      "parentId": "wrk_123",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "name": "Items",
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_list_items",
+      "parentId": "fld_items",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "GET",
+      "url": "{{ base_url }}/items/",
+      "name": "Listar Items",
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_item",
+      "parentId": "fld_items",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "GET",
+      "url": "{{ base_url }}/items/1",
+      "name": "Obter Item",
+      "_type": "request"
+    },
+    {
+      "_id": "req_create_item",
+      "parentId": "fld_items",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "POST",
+      "url": "{{ base_url }}/items/",
+      "name": "Criar Item",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Sword of Light\",\n  \"description\": \"A glowing blade\",\n  \"rarity_id\": 1,\n  \"power\": 50\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_update_item",
+      "parentId": "fld_items",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "PUT",
+      "url": "{{ base_url }}/items/1",
+      "name": "Atualizar Item",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Enhanced Sword of Light\",\n  \"description\": \"A brighter glowing blade\",\n  \"power\": 75,\n  \"rarity_id\": 1\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_delete_item",
+      "parentId": "fld_items",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "DELETE",
+      "url": "{{ base_url }}/items/1",
+      "name": "Deletar Item",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_rarities",
+      "parentId": "wrk_123",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "name": "Rarities",
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_list_rarities",
+      "parentId": "fld_rarities",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "GET",
+      "url": "{{ base_url }}/rarities/",
+      "name": "Listar Rarities",
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_rarity",
+      "parentId": "fld_rarities",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "GET",
+      "url": "{{ base_url }}/rarities/1",
+      "name": "Obter Rarity",
+      "_type": "request"
+    },
+    {
+      "_id": "req_create_rarity",
+      "parentId": "fld_rarities",
+      "created": 1620000000000,
+      "modified": 1620000000000,
+      "method": "POST",
+      "url": "{{ base_url }}/rarities/",
+      "name": "Criar Rarity",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Epic\",\n  \"color\": \"#FFD700\",\n  \"description\": \"Highly valuable items\"\n}"
+      },
+      "_type": "request"
     }
-  }
+  ]
 }
