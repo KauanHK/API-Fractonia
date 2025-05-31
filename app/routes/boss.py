@@ -3,16 +3,16 @@ from ..db import db
 from ..models import Boss
 
 
-bp = Blueprint('bosses', __name__, url_prefix = '/bosses')
+bp = Blueprint('boss', __name__, url_prefix = '/boss')
 
 
 @bp.route('/')
-def bosses():
+def boss():
     return [boss.to_dict() for boss in Boss.query.all()]
 
 
 @bp.route('/<int:id>')
-def boss(id: int):
+def get_boss(id: int):
     return Boss.query.get_or_404(id).to_dict()
 
 
