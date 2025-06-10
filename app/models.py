@@ -1,245 +1,163 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import text
-from .db import db
-import click
-import os
-import datetime
-from config import BASE_DIR
-from typing import Any
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+import enum
+
+db = SQLAlchemy()
+
+
+class ResultType(enum.Enum):
+    WIN = 'win'
+    LOSS = 'loss'
+    FLEE = 'flee'
 
 
 class Player(db.Model):
-
     __tablename__ = 'player'
-
+    
     id = db.Column(db.Integer, primary_key = True)
-    username = db.Column(db.String(30), nullable = False)
-    email = db.Column(db.String(120), nullable = False, unique = True)
+    username = db.Column(db.String(30), unique = True, nullable = False)
+    email = db.Column(db.String(120), unique=True, nullable = False)
     password_hash = db.Column(db.String(128), nullable = False)
     level = db.Column(db.Integer, default = 1)
-    health = db.Column(db.Integer, default = 100)
-    total_time = db.Column(db.Float, default = 0)
-    saved_at = db.Column(db.DateTime, default = datetime.datetime.now)
-    created_at = db.Column(db.DateTime, default = datetime.datetime.now)
+    experience = db.Column(db.BigInteger, default = 0)
+    coins = db.Column(db.BigInteger, default = 0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    current_phase_id = db.Column(db.Integer, db.ForeignKey('phase.id'), nullable = False, default = 1)
-    current_phase = db.relationship('Phase', backref = 'players')
+    achievements = db.relationship('PlayerAchievement', backref = 'player', lazy = True)
+    phase_progresses = db.relationship('PhaseProgress', backref = 'player', lazy = True)
+    battles = db.relationship('Battle', backref = 'player', lazy = True)
 
-    def __init__(
-        self,
-        username: str,
-        email: str,
-        password_hash: str
-    ) -> None:
-        
+    def __init__(self, username, email, password):
         self.username = username
         self.email = email
-        self.password_hash = password_hash
+        self.set_password(password)
 
-    def to_dict(self) -> dict:
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def to_dict(self):
         return {
             'id': self.id,
             'username': self.username,
-            'email': self.email,
             'level': self.level,
-            'health': self.health,
-            'current_phase': self.current_phase,
-            'total_time': self.total_time,
-            'saved_at': self.saved_at,
-            'created_at': self.created_at,
-            'items': [item.to_dict() for item in PlayerItem.query.filter(PlayerItem.player_id == self.id)],
-            'current_phase': self.current_phase.to_dict()
+            'experience': self.experience,
+            'coins': self.coins,
+            'created_at': self.created_at.isoformat()
         }
+
+
+class Achievement(db.Model):
+    __tablename__ = 'achievement'
     
-    def set_password(self, password: str):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password: str):
-        return check_password_hash(self.password_hash, password)
-
-    def __repr__(self):
-        return f'<Player {self.username}>'
-
-
-class Rarity(db.Model):
-
-    __tablename__ = 'rarity'
-
     id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String(30), unique = True, nullable = False)
-    color = db.Column(db.String(20))
-    description = db.Column(db.String(100))
-
-    def __init__(self, name: str, color: str, description: str = '') -> None:
-        self.name = name
-        self.color = color
-        self.description = description
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            'id': self.id,
-            'name': self.name,
-            'color': self.color,
-            'description': self.description
-        }
-
-    def __repr__(self):
-        return f'<Rarity {self.name}>'
-
-
-class Item(db.Model):
-
-    __tablename__ = 'item'
-
-    id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String(100), nullable = False)
-    description = db.Column(db.String(255))
-    power = db.Column(db.Integer, default = 0)
-    acquired_at = db.Column(db.DateTime, default = lambda: datetime.datetime.now(datetime.UTC))
-
-    rarity_id = db.Column(db.Integer, db.ForeignKey('rarity.id'), nullable = False)
-    rarity = db.relationship('Rarity', backref = 'items')
-
-    def __init__(
-        self,
-        name: str,
-        description: str,
-        rarity_id: int,
-        power: int = 0
-    ) -> None:
-        
-        self.name = name
-        self.description = description
-        self.rarity_id = rarity_id
-        self.power = power
+    name = db.Column(db.String(100), unique = True, nullable = False)
+    description = db.Column(db.String(255), nullable = False)
+    reward_coins = db.Column(db.Integer, default = 0)
+    icon = db.Column(db.String(255))
+    criteria = db.Column(db.String(100), nullable = False)
+    target_value = db.Column(db.Integer, nullable = False)
+    
+    players = db.relationship('PlayerAchievement', backref='achievement', lazy=True)
 
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
             'description': self.description,
-            'power': self.power,
-            'acquired_at': self.acquired_at,
-            'rarity': self.rarity.to_dict()
+            'reward_coins': self.reward_coins,
+            'icon': self.icon,
+            'criteria': self.criteria,
+            'target_value': self.target_value
         }
 
 
-class PlayerItem(db.Model):
-
-    __tablename__ = 'player_item'
-
+class PlayerAchievement(db.Model):
+    __tablename__ = 'player_achievement'
+    
     id = db.Column(db.Integer, primary_key = True)
     player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable = False)
-    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable = False)
+    achievement_id = db.Column(db.Integer, db.ForeignKey('achievement.id'), nullable = False)
+    progress = db.Column(db.Integer, default = 0)
+    completed = db.Column(db.Boolean, default = False)
+    completed_at = db.Column(db.DateTime)
 
-    player = db.relationship('Player', backref = 'inventory')
-    item = db.relationship('Item', backref = 'owned_by')
-
-    def __init__(
-        self,
-        player_id: int,
-        item_id: int
-    ) -> None:
-        
-        self.player_id = player_id
-        self.item_id = item_id
-    
-    def to_dict(self) -> dict[str, Any]:
-        return self.item.to_dict()
-
-
-class LevelProgress(db.Model):
-
-    __tablename__ = 'level_progress'
-
-    id = db.Column(db.Integer, primary_key = True)
-    time_spent = db.Column(db.Float)
-    completed_at = db.Column(db.DateTime, default = datetime.datetime.now)
-    
-    player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable = False)
-    phase_id = db.Column(db.Integer, db.ForeignKey('phase.id'), nullable = False)
-
-    player = db.relationship('Player', backref = 'level_progress')
-    phase = db.relationship('Phase', backref = 'level_progress')
-
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self):
         return {
             'id': self.id,
-            'player': self.player.to_dict(),
-            'phase': self.phase.to_dict(),
-            'time_spent': self.time_spent,
-            'completed_at': self.completed_at
+            'player_id': self.player_id,
+            'achievement': self.achievement.to_dict(),
+            'progress': self.progress,
+            'target': self.achievement.target_value,
+            'completed': self.completed,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None
         }
 
-    def __repr__(self):
-        return f'<LevelProgress Player {self.player_id} Phase {self.phase_id}>'
 
-
-class Boss(db.Model):
-
-    __tablename__ = 'boss'
-
-    id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String(100), nullable = False)
-
-    def __init__(self, name: str) -> None:
-        self.name = name
+class Phase(db.Model):
+    __tablename__ = 'phase'
     
-    def to_dict(self) -> dict[str, Any]:
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String(30), nullable = False)
+    
+    progresses = db.relationship('PhaseProgress', backref = 'phase', lazy = True)
+
+    def to_dict(self):
         return {
             'id': self.id,
             'name': self.name
         }
 
-    def __repr__(self):
-        return f'<Boss {self.name}>'
+
+class PhaseProgress(db.Model):
+    __tablename__ = 'phase_progress'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable = False)
+    phase_id = db.Column(db.Integer, db.ForeignKey('phase.id'), nullable = False)
+    completed = db.Column(db.Boolean, default = False)
+    completed_at = db.Column(db.DateTime)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'player_id': self.player_id,
+            'phase': self.phase.to_dict(),
+            'completed': self.completed,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None
+        }
 
 
-class Phase(db.Model):
-
-    __tablename__ = 'phase'
-
+class Battle(db.Model):
+    __tablename__ = 'battle'
+    
     id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String(30), nullable = False)
-    description = db.Column(db.String(255))
+    player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable = False)
+    result = db.Column(db.Enum(ResultType), default = ResultType.WIN)
+    created_at = db.Column(db.DateTime, default = datetime.utcnow)
 
-    boss_id = db.Column(db.Integer, db.ForeignKey('boss.id'), nullable = True)
-    boss = db.relationship('Boss', backref = 'phases')
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'player_id': self.player_id,
+            'result': self.result.value,
+            'created_at': self.created_at.isoformat()
+        }
 
-    def __init__(self, name: str, description: str = '', boss_id: int = None):
-        self.name = name
-        self.description = description
-        self.boss_id = boss_id
 
-    def to_dict(self) -> dict:
+class Item(db.Model):
+    __tablename__ = 'item'
+    
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String(100), nullable = False)
+    achievement_reward = db.Column(db.Boolean, default = False)
+
+    def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
-            'description': self.description,
-            'boss': self.boss.to_dict()
+            'is_reward': self.achievement_reward
         }
-
-    def __repr__(self):
-        return f'<Phase {self.name}>'
-
-
-@click.command('insert-data')
-def insert_data_command():
-
-    with open(os.path.join(BASE_DIR, 'app', 'script.sql'), 'rb') as f:
-        sql_script = f.read().decode()
-    
-    statements = sql_script.strip().split(';')
-
-    with db.session.begin():
-        for statement in statements:
-            if statement.strip():
-                db.session.execute(text(statement))
-
-    usernames = ['admin', 'kauan', 'martin', 'tiago', 'william', 'bob']
-    
-    for username in usernames:
-        player = Player(username, f'{username}@gmail.com', generate_password_hash('123'))
-        db.session.add(player)
-    
-    db.session.commit()
