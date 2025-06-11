@@ -6,8 +6,10 @@ import enum
 
 db = SQLAlchemy()
 
+
 def utcnow() -> datetime:
     return datetime.now(timezone.utc)
+
 
 # Relação Many-to-Many Player - Item
 player_items = db.Table('player_items',
@@ -34,6 +36,7 @@ class Player(db.Model):
     coins = db.Column(db.BigInteger, default = 0)
     created_at = db.Column(db.DateTime, default = utcnow)
     saved_at = db.Column(db.DateTime, default = utcnow)
+    is_admin = db.Column(db.Boolean, default = False)
     
     achievements = db.relationship('PlayerAchievement', backref = 'player', lazy = True)
     phase_progresses = db.relationship('PhaseProgress', backref = 'player', lazy = True)

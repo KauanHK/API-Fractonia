@@ -4,7 +4,7 @@ from .models import Player
 from functools import wraps
 from flask import Blueprint, request, jsonify, current_app, abort
 from werkzeug.security import check_password_hash
-from typing import Callable
+from typing import Callable, NoReturn, overload
 
 
 auth_bp = Blueprint('auth', __name__, url_prefix = '/auth')
@@ -98,8 +98,13 @@ def is_admin(user_id: int):
     return player.username == 'admin'
 
 
-def validate_access(current_user_id: int, user_id: int):
+@overload
+def validate_access(current_user_id: int, user_id: int, silent: bool = False) -> NoReturn: ...
+@overload
+def validate_access(current_user_id: int, user_id: int, silent: bool = True) -> bool: ...
+
+def validate_access(current_user_id: int, user_id: int, silent: bool = False) -> bool:
 
     if current_user_id != user_id and not is_admin(current_user_id):
-        abort(403, "You don't have access to this page")
+        abort(403, "Você não tem acesso a essa página")
     return None
