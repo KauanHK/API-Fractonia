@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt_identity
 from ..db import db
-from ..models import Player, Item, PlayerAchievement, PhaseProgress
+from ..models import Player, Item, PlayerAchievement, PhaseProgress, PlayerItem, Achievement
 from ..auth import token_required, admin_required, validate_access
 from flask import abort
+from datetime import datetime
 
 
 bp = Blueprint('players', __name__, url_prefix='/players')
@@ -51,7 +52,7 @@ def update_player(id: int):
 
     player: Player = Player.query.get_or_404(id)
 
-    if validate_access(silent = True):
+    if validate_access(id, silent = True):
         abort(403, description = "Você não tem permissão para atualizar este jogador")
 
     data = request.get_json()
@@ -91,24 +92,20 @@ def delete_player(id: int):
 @bp.route('/<int:id>')
 @token_required
 def player(id: int):
-    player = Player.query.get_or_404(id)
+    player: Player = Player.query.get_or_404(id)
     return player.to_dict()
 
 
 @bp.route('/<int:id>/items')
 @token_required
 def player_items(id: int):
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
-    items = PlayerItem.query.filter_by(player_id=id).paginate(page=page, per_page=per_page, error_out=False)
+    items = PlayerItem.query.filter_by(player_id = id)
     return jsonify({
-        'items': [item.to_dict() for item in items.items],
-        'total': items.total,
-        'pages': items.pages,
-        'current_page': page
+        'items': [item.to_dict() for item in items],
+        'total': items.count()
     })
 
-# Adiciona um item a um jogador
+
 @bp.route('/<int:id>/items', methods=['POST'])
 @token_required
 def new_item(id: int):
@@ -125,7 +122,7 @@ def new_item(id: int):
     db.session.commit()
     return player_item.to_dict(), 201
 
-# Remove um item de um jogador
+
 @bp.route('/<int:id>/items/<int:item_id>', methods=['DELETE'])
 @token_required
 def remove_item(id: int, item_id: int):
@@ -136,15 +133,7 @@ def remove_item(id: int, item_id: int):
         'message': f'Item {item_id} removido do jogador {id} com sucesso.'
     }), 200
 
-# Retorna as estatísticas de progressão de nível de um jogador
-@bp.route('/<int:id>/stats')
-@token_required
-def stats(id: int):
-    Player.query.get_or_404(id)
-    stats = LevelProgress.query.filter_by(player_id=id).all()
-    return [stat.to_dict() for stat in stats]
 
-# Retorna as conquistas de um jogador
 @bp.route('/<int:id>/achievements')
 @token_required
 def player_achievements(id: int):
@@ -152,10 +141,167 @@ def player_achievements(id: int):
     achievements = PlayerAchievement.query.filter_by(player_id=id).all()
     return [achievement.to_dict() for achievement in achievements]
 
-# Retorna os progressos de fases de um jogador
-@bp.route('/<int:id>/phases')
+
+@bp.route('/<int:id>/phases', methods=['GET'])
 @token_required
 def player_phases(id: int):
-    Player.query.get_or_404(id)
+    """Lista todas as fases completadas pelo jogador"""
     phases = PhaseProgress.query.filter_by(player_id=id).all()
-    return [phase.to_dict() for phase in phases]
+    return jsonify({
+        'phases': [phase.to_dict() for phase in phases],
+        'total': len(phases)
+    })
+
+
+@bp.route('/<int:id>/phases', methods=['POST'])
+@token_required
+def complete_phase(id: int):
+    """Registra conclusão de uma fase pelo jogador"""
+    data = request.get_json()
+    
+    if 'phase_id' not in data:
+        abort(400, description="O ID da fase é obrigatório")
+    
+    # Verifica se o jogador já completou esta fase
+    existing = PhaseProgress.query.filter_by(
+        player_id=id,
+        phase_id=data['phase_id']
+    ).first()
+    
+    if existing:
+        return jsonify({
+            'message': 'Fase já completada anteriormente',
+            'progress': existing.to_dict()
+        }), 200
+    
+    # Cria novo progresso
+    progress = PhaseProgress(
+        player_id=id,
+        phase_id=data['phase_id'],
+        completed=True,
+        completed_at=datetime.utcnow()
+    )
+    
+    db.session.add(progress)
+    db.session.commit()
+    
+    return jsonify({
+        'message': 'Progresso na fase registrado com sucesso',
+        'progress': progress.to_dict()
+    }), 201
+
+# ================================================
+# Rotas para Conquistas
+# ================================================
+
+
+@bp.route('/<int:id>/achievements/progress', methods=['POST'])
+@token_required
+def update_achievement_progress(id: int):
+    """Atualiza o progresso em uma conquista"""
+    
+    payload = request.get_json()
+    if 'achievement_id' not in payload:
+        abort(400, description="Campo obrigatório: 'achievement_id'")
+    
+    achievement_id = payload['achievement_id']
+    achievement = Achievement.query.get_or_404(achievement_id)
+    
+    # Busca ou cria o progresso na conquista
+    player_ach = PlayerAchievement.query.filter_by(
+        player_id = id,
+        achievement_id = achievement_id
+    ).first()
+    
+    if not player_ach:
+        player_ach = PlayerAchievement(
+            player_id = id,
+            achievement_id = achievement_id,
+        )
+        db.session.add(player_ach)
+
+        # Aplica recompensas
+        player: Player = Player.query.get(id)
+        player.coins += achievement.reward_coins
+    
+    db.session.commit()
+    
+    return jsonify({
+        'message': 'Progresso na conquista atualizado',
+        'achievement': player_ach.to_dict()
+    }), 200
+
+# ================================================
+# Rotas para Batalhas
+# ================================================
+
+
+@bp.route('/<int:id>/battles', methods=['GET'])
+@token_required
+def player_battles(id: int):
+    """Lista todas as batalhas do jogador"""
+    battles = Battle.query.filter_by(player_id=id).order_by(Battle.created_at.desc()).all()
+    return jsonify({
+        'battles': [battle.to_dict() for battle in battles],
+        'total': len(battles)
+    })
+
+
+@bp.route('/<int:id>/battles', methods=['POST'])
+@token_required
+def record_battle(id: int):
+    """Registra uma nova batalha para o jogador"""
+    data = request.get_json()
+    
+    required_fields = ['result']
+    if any(field not in data for field in required_fields):
+        abort(400, description="O resultado da batalha é obrigatório")
+    
+    # Cria nova batalha
+    battle = Battle(
+        player_id=id,
+        result=data['result'],
+        boss_id=data.get('boss_id'),
+        created_at=datetime.utcnow()
+    )
+    
+    db.session.add(battle)
+    db.session.commit()
+    
+    return jsonify({
+        'message': 'Batalha registrada com sucesso',
+        'battle': battle.to_dict()
+    }), 201
+
+# ================================================
+# Rotas para Itens (atualização)
+# ================================================
+
+
+@bp.route('/<int:player_id>/items/<int:item_id>', methods=['PUT'])
+@token_required
+def update_player_item(player_id: int, item_id: int):
+    """Atualiza um item do jogador (ex: equipar)"""
+    player_item = PlayerItem.query.filter_by(
+        player_id=player_id,
+        item_id=item_id
+    ).first_or_404()
+    
+    data = request.get_json()
+    
+    # Atualiza campos permitidos
+    if 'is_equipped' in data:
+        player_item.is_equipped = bool(data['is_equipped'])
+    
+    if 'durability' in data:
+        player_item.durability = int(data['durability'])
+    
+    if 'slot' in data and data['slot'] in ['weapon', 'head', 'chest', 'legs', 'accessory']:
+        player_item.slot = data['slot']
+    
+    db.session.commit()
+    
+    return jsonify({
+        'message': f'Item {item_id} atualizado para o jogador {player_id}',
+        'item': player_item.to_dict()
+    }), 200

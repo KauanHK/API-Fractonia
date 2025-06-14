@@ -8,7 +8,11 @@ bp = Blueprint('items', __name__, url_prefix = '/items')
 
 @bp.route('/')
 def items():
-    return [item.to_dict() for item in Item.query.all()]
+    items = Item.query.all()
+    return {
+        "items": [item.to_dict() for item in items],
+        "total": len(items)
+    }
 
 
 @bp.route('/<int:id>')
@@ -22,10 +26,7 @@ def new_item():
     item_json = request.get_json()
 
     item = Item(
-        name = item_json['name'],
-        description = item_json['description'],
-        rarity_id = item_json['rarity_id'],
-        power = item_json.get('power')
+        name = item_json['name']
     )
 
     db.session.add(item)

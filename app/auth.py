@@ -73,7 +73,7 @@ def token_required(f: Callable):
 
         current_user_id = get_current_user_id()
         validate_access(current_user_id, id)
-        return f(id, *args, **kwargs)
+        return f(*args, **kwargs)
 
     return decorated
 
@@ -99,12 +99,13 @@ def is_admin(user_id: int):
 
 
 @overload
-def validate_access(current_user_id: int, user_id: int, silent: bool = False) -> NoReturn: ...
+def validate_access(user_id: int, silent: bool = False) -> NoReturn: ...
 @overload
-def validate_access(current_user_id: int, user_id: int, silent: bool = True) -> bool: ...
+def validate_access(user_id: int, silent: bool = True) -> bool: ...
 
-def validate_access(current_user_id: int, user_id: int, silent: bool = False) -> bool:
+def validate_access(user_id: int, silent: bool = False) -> bool:
 
+    current_user_id = get_current_user_id()
     if current_user_id != user_id and not is_admin(current_user_id):
         abort(403, "Você não tem acesso a essa página")
     return None
