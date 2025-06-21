@@ -55,6 +55,7 @@ class Achievement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
     reward_coins = db.Column(db.Integer, default=0)
+    reward_experience = db.Column(db.BigInteger, default=0)
 
     def to_dict(self):
         return {
@@ -90,6 +91,8 @@ class Phase(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(30), nullable=False)
     boss_id = db.Column(db.Integer, db.ForeignKey('boss.id'))
+    reward_coins = db.Column(db.Integer, default=0)
+    reward_experience = db.Column(db.BigInteger, default=0)
 
     boss = db.relationship('Boss', backref='phases', lazy=True)
 
@@ -130,6 +133,8 @@ class Battle(db.Model):
     player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
     boss_id = db.Column(db.Integer, db.ForeignKey('boss.id'))
     result = db.Column(db.Enum(ResultType), default=ResultType.WIN)
+    reward_coins = db.Column(db.Integer, default=0)
+    reward_experience = db.Column(db.BigInteger, default=0)
     created_at = db.Column(db.DateTime, default=utcnow)
 
     player = db.relationship('Player', backref='battles', lazy=True)
