@@ -13,29 +13,42 @@ def _check_and_grant_achievements(player: Player):
     """
     Verifica e concede conquistas com base na experiência total do jogador.
     """
+    all_achievements: list[Achievement] = Achievement.query.all()
+    player_achievements_ids: set[int] = {pa.achievement_id for pa in player.achievements}
 
-    achievement_xp_tiers: list[Achievement] = Achievement.query.all()
-
-    # IDs das conquistas que o jogador já tem
-    player_achievements_ids: list[int] = {pa.id for pa in player.achievements}
-
-    for achievement in achievement_xp_tiers:
-        
-        # Verifica se o jogador tem XP suficiente e ainda não possui a conquista
-        if player.experience >= achievement.xp and achievement.id not in player_achievements_ids:
-            
-            # Concede a nova conquista
+    for achievement in all_achievements:
+        if player.experience >= achievement.xp_required and achievement.id not in player_achievements_ids:
             new_player_achievement = PlayerAchievement(
-                player_id = player.id,
-                achievement_id = achievement.id
+                player_id=player.id,
+                achievement_id=achievement.id
             )
             db.session.add(new_player_achievement)
-            print(f"Conquista '{achievement.name}' concedida ao jogador {player.username} por atingir {achievement.xp} XP!")
+            player.coins += achievement.reward_coins
 
-            # Aplica as recompensas da própria conquista
-            achievement_def: Achievement = Achievement.query.get(achievement.id)
-            if achievement_def:
-                player.coins += achievement_def.reward_coins
+
+@bp.route('/<int:id>/insignia')
+@token_required
+def get_player_main_insignia(id: int):
+    """Retorna a insígnia/conquista de maior prestígio do jogador."""
+    
+    player: Player = Player.query.get_or_404(id)
+
+    # Encontra a conquista de maior XP requerido que o jogador possui.
+    main_insignia = db.session.query(Achievement)\
+        .join(PlayerAchievement, PlayerAchievement.achievement_id == Achievement.id)\
+        .filter(PlayerAchievement.player_id == id)\
+        .order_by(Achievement.xp_required.desc())\
+        .first()
+
+    if not main_insignia:
+        return jsonify({
+            'message': 'Este jogador ainda não possui nenhuma insígnia.'
+        }), 404
+
+    return jsonify({
+        'insignia': main_insignia.to_dict(),
+        'player': player.username
+    })
 
 
 @bp.route('/')
@@ -51,13 +64,12 @@ def index():
 @bp.route('/ranking')
 def ranking():
     """Retorna o ranking geral dos jogadores baseado na experiência."""
-    players: list[Player] = Player.query.order_by(Player.experience.desc(), Player.level.desc()).all()
+    players: list[Player] = Player.query.order_by(Player.experience.desc()).all()
     return jsonify([
         {
             'rank': index + 1,
             'id': player.id,
             'username': player.username,
-            'level': player.level,
             'experience': player.experience
         }
         for index, player in enumerate(players)
@@ -67,51 +79,33 @@ def ranking():
 @bp.route('/<int:id>/phases', methods=['POST'])
 @token_required
 def complete_phase(id: int):
-    """Registra a conclusão de uma fase, aplica recompensas e verifica conquistas."""
-    validate_access(id)
+
     data = request.get_json()
     if 'phase_id' not in data:
-        abort(400, description="O ID da fase é obrigatório")
+        abort(400, description = "O ID da fase é obrigatório")
 
-    player = Player.query.get_or_404(id)
-    phase_id = data['phase_id']
-    phase = Phase.query.get_or_404(phase_id)
+    player: Player = Player.query.get_or_404(id)
+    phase: Phase = Phase.query.get_or_404(data['phase_id'])
     
-    # Verifica se o jogador já completou esta fase
-    existing = PhaseProgress.query.filter_by(
-        player_id=id,
-        phase_id=phase_id
-    ).first()
+    if PhaseProgress.query.filter_by(player_id = id, phase_id = data['phase_id']).first():
+        return jsonify({'message': 'Fase já completada anteriormente'}), 200
     
-    if existing:
-        return jsonify({
-            'message': 'Fase já completada anteriormente',
-            'progress': existing.to_dict()
-        }), 200
-    
-    # Adiciona as recompensas da fase (XP e Moedas) ao jogador
     if phase.reward_coins:
         player.coins += phase.reward_coins
     if phase.reward_experience:
         player.experience += phase.reward_experience
 
-    # Após ganhar XP, verifica se alguma conquista foi desbloqueada
     _check_and_grant_achievements(player)
     
-    # Cria o registro de progresso da fase
     progress = PhaseProgress(
-        player_id=id,
-        phase_id=phase_id,
-        completed=True,
-        completed_at=datetime.utcnow()
+        player_id = id, phase_id = data['phase_id'], completed=True, completed_at = utcnow()
     )
     db.session.add(progress)
     db.session.commit()
     
     return jsonify({
         'message': f'Fase {phase.name} completada! Recompensas recebidas.',
-        'progress': progress.to_dict(),
-        'player_status': player.to_dict() # Retorna o status atualizado do jogador
+        'player_status': player.to_dict()
     }), 201
 
 
@@ -153,7 +147,7 @@ def update_player(id: int):
     if 'password' in data:
         player.set_password(data['password'])
     if is_admin(get_current_user_id()):
-        for attr in ('level', 'experience', 'coins'):
+        for attr in ('experience', 'coins'):
             if attr in data:
                 setattr(player, attr, data[attr])
     player.saved_at = utcnow()

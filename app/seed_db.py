@@ -1,10 +1,8 @@
 import os
 import sys
 from datetime import datetime, timezone
-from werkzeug.security import generate_password_hash
 
-
-# Adiciona o diretório raiz ao path para importar os módulos
+# Adiciona o diretório raiz ao path para importar os módulos da aplicação
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app import create_app
@@ -14,21 +12,24 @@ from app.models import (
     Phase, Boss, PhaseProgress, Battle, ResultType
 )
 
+# Cria a instância do app para ter o contexto da aplicação
 app = create_app()
 
 def seed_database():
-        
+    """
+    Limpa e popula o banco de dados com dados iniciais para teste e desenvolvimento.
+    """
     with app.app_context():
-        # Limpar dados existentes
+        # Apaga todas as tabelas e as recria do zero. Use com cuidado.
         db.drop_all()
         db.create_all()
 
         # 1. Criar Bosses
         bosses = [
-            Boss(name="Goblin King", health=1000),
-            Boss(name="Dragon Lord", health=2500),
-            Boss(name="Ice Demon", health=1800),
-            Boss(name="Shadow Wraith", health=3000)
+            Boss(name="Rei Goblin", health=1000),
+            Boss(name="Lorde Dragão", health=2500),
+            Boss(name="Demônio do Gelo", health=1800),
+            Boss(name="Espectro da Sombra", health=3000)
         ]
         db.session.add_all(bosses)
         db.session.commit()
@@ -44,22 +45,22 @@ def seed_database():
         db.session.add_all(items)
         db.session.commit()
 
-        # 3. Criar Fases (vinculadas a bosses)
+        # 3. Criar Fases com suas recompensas 
         phases = [
-            Phase(name="Floresta Negra", boss_id=bosses[0].id),
-            Phase(name="Montanha da Perdição", boss_id=bosses[1].id),
-            Phase(name="Cavernas Gélidas", boss_id=bosses[2].id),
-            Phase(name="Abismo Sombrío", boss_id=bosses[3].id)
+            Phase(name="Floresta Negra", boss_id=bosses[0].id, reward_coins=100, reward_experience=250),
+            Phase(name="Montanha da Perdição", boss_id=bosses[1].id, reward_coins=250, reward_experience=700),
+            Phase(name="Cavernas Gélidas", boss_id=bosses[2].id, reward_coins=180, reward_experience=500),
+            Phase(name="Abismo Sombrio", boss_id=bosses[3].id, reward_coins=400, reward_experience=1200)
         ]
         db.session.add_all(phases)
         db.session.commit()
 
-        # 4. Criar Conquistas
+        # 4. Criar Conquistas com requisito de XP 
         achievements = [
-            Achievement(name="Primeiros Passos", reward_coins=50),
-            Achievement(name="Caçador de Bosses", reward_coins=200),
-            Achievement(name="Colecionador", reward_coins=150),
-            Achievement(name="Lenda Viva", reward_coins=500)
+            Achievement(name="Iniciante", xp_required=100, reward_coins=50),
+            Achievement(name="Aventureiro", xp_required=500, reward_coins=150),
+            Achievement(name="Veterano", xp_required=1500, reward_coins=300),
+            Achievement(name="Lenda", xp_required=5000, reward_coins=1000)
         ]
         db.session.add_all(achievements)
         db.session.commit()
@@ -67,10 +68,9 @@ def seed_database():
         # 5. Criar Jogadores
         players = [
             Player(username="admin", email="admin@game.com", password="123"),
-            Player(username="player1", email="player1@mail.com", password="123"),
-            Player(username="player2", email="player2@mail.com", password="123")
+            Player(username="jogador1", email="player1@mail.com", password="123"),
+            Player(username="jogador2", email="player2@mail.com", password="123")
         ]
-        # O método __init__ já cuida da senha, então não é preciso chamar set_password separadamente aqui
         db.session.add_all(players)
         db.session.commit()
 
@@ -84,31 +84,28 @@ def seed_database():
         db.session.add_all(player_items)
         db.session.commit()
 
-        # 7. Registrar Conquistas dos Jogadores
-        player_achievements = [
-            PlayerAchievement(player_id=players[1].id, achievement_id=achievements[0].id),
-            PlayerAchievement(player_id=players[1].id, achievement_id=achievements[1].id),
-            PlayerAchievement(player_id=players[2].id, achievement_id=achievements[0].id)
-        ]
-        db.session.add_all(player_achievements)
-        db.session.commit()
-
-        # 8. Registrar Progresso nas Fases
+        # 7. Registrar Conquistas para jogadores (opcional, para teste)
+        # A lógica agora concede conquistas automaticamente, mas podemos pré-popular para testes.
+        # Ex: Dando experiência inicial ao jogador 2 e rodando a lógica
+        player2 = players[2]
+        player2.experience = 600 # XP suficiente para a conquista "Aventureiro"
+        # A lógica de concessão será testada via API, não aqui no seed.
+        
+        # 8. Registrar Progresso de Fases para jogadores de exemplo
         phase_progress = [
             PhaseProgress(player_id=players[1].id, phase_id=phases[0].id, completed=True),
-            PhaseProgress(player_id=players[1].id, phase_id=phases[1].id, completed=True),
-            PhaseProgress(player_id=players[2].id, phase_id=phases[0].id, completed=True)
         ]
         db.session.add_all(phase_progress)
         db.session.commit()
-
-        # 9. Registrar Batalhas
+        
+        # 9. Registrar Batalhas com recompensas 
         battles = [
             Battle(
                 player_id=players[1].id,
                 boss_id=bosses[0].id,
                 result=ResultType.WIN,
-                created_at=datetime.now(timezone.utc)
+                reward_coins=20, # Recompensa pequena, já que a fase dá o prêmio principal
+                reward_experience=50
             ),
             Battle(
                 player_id=players[2].id,
@@ -120,7 +117,7 @@ def seed_database():
         db.session.add_all(battles)
         db.session.commit()
 
-        print("Banco de dados populado com sucesso!")
+        print("Banco de dados populado com sucesso com o novo schema!")
 
 
 if __name__ == "__main__":

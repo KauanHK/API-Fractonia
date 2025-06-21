@@ -1,0 +1,360 @@
+{
+    "_type": "export",
+    "__export_format": 4,
+    "__export_date": "2025-06-21T21:30:00.000Z",
+    "__export_source": "insomnia.desktop.app:v2023.5.8",
+    "resources": [
+        {
+            "_id": "wrk_1",
+            "parentId": null,
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "name": "API de Jogo RPG",
+            "description": "",
+            "scope": "collection",
+            "_type": "workspace"
+        },
+        {
+            "_id": "env_1",
+            "parentId": "wrk_1",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "name": "Base Environment",
+            "data": {
+                "base_url": "http://127.0.0.1:5000",
+                "admin_token": "COLE_SEU_TOKEN_DE_ADMIN_AQUI",
+                "player_token": "COLE_SEU_TOKEN_DE_JOGADOR_AQUI"
+            },
+            "dataPropertyOrder": {
+                "&": [
+                    "base_url",
+                    "admin_token",
+                    "player_token"
+                ]
+            },
+            "color": null,
+            "isPrivate": false,
+            "metaSortKey": 1687383000000,
+            "_type": "environment"
+        },
+        {
+            "_id": "fld_auth",
+            "parentId": "wrk_1",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "name": "Auth",
+            "description": "Rotas de autenticação",
+            "environment": {},
+            "environmentPropertyOrder": null,
+            "metaSortKey": -100,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_auth_admin",
+            "parentId": "fld_auth",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "url": "{{ _.base_url }}/auth/login",
+            "name": "Login como Admin",
+            "description": "Execute para obter o token de admin. Copie o token para a variável 'admin_token' no ambiente.",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"username\": \"admin\",\n\t\"password\": \"admin123\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -100,
+            "_type": "request"
+        },
+        {
+            "_id": "req_auth_player",
+            "parentId": "fld_auth",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "url": "{{ _.base_url }}/auth/login",
+            "name": "Login como Jogador",
+            "description": "Execute para obter o token de jogador. Copie o token para a variável 'player_token' no ambiente.",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"username\": \"jogador1\",\n\t\"password\": \"pass123\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -50,
+            "_type": "request"
+        },
+        {
+            "_id": "fld_players",
+            "parentId": "wrk_1",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "name": "Players",
+            "description": "Rotas relacionadas aos jogadores",
+            "environment": {},
+            "environmentPropertyOrder": null,
+            "metaSortKey": 0,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_player_ranking",
+            "parentId": "fld_players",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "url": "{{ _.base_url }}/players/ranking",
+            "name": "Ver Ranking Geral",
+            "description": "",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [],
+            "authentication": {},
+            "metaSortKey": 0,
+            "_type": "request"
+        },
+        {
+            "_id": "req_player_insignia",
+            "parentId": "fld_players",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "url": "{{ _.base_url }}/players/2/insignia",
+            "name": "Ver Insígnia Principal do Jogador",
+            "description": "Retorna a conquista de maior XP do jogador com ID 2.",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "x-access-token",
+                    "value": "{{ _.player_token }}"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": 50,
+            "_type": "request"
+        },
+        {
+            "_id": "req_player_complete_phase",
+            "parentId": "fld_players",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "url": "{{ _.base_url }}/players/2/phases",
+            "name": "Completar uma Fase",
+            "description": "O jogador de ID 2 completa a fase de ID 1, ganha XP e moedas, e possivelmente uma nova insígnia.",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"phase_id\": 1\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "x-access-token",
+                    "value": "{{ _.player_token }}"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": 100,
+            "_type": "request"
+        },
+        {
+            "_id": "req_player_list_achievements",
+            "parentId": "fld_players",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "url": "{{ _.base_url }}/players/2/achievements",
+            "name": "Listar Conquistas de um Jogador",
+            "description": "",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "x-access-token",
+                    "value": "{{ _.player_token }}"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": 150,
+            "_type": "request"
+        },
+        {
+            "_id": "req_admin_list_players",
+            "parentId": "fld_players",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "url": "{{ _.base_url }}/players",
+            "name": "[ADMIN] Listar todos os Jogadores",
+            "description": "",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "x-access-token",
+                    "value": "{{ _.admin_token }}"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": 200,
+            "_type": "request"
+        },
+        {
+            "_id": "req_admin_create_player",
+            "parentId": "fld_players",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "url": "{{ _.base_url }}/players",
+            "name": "Criar Novo Jogador",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"username\": \"novo_heroi\",\n\t\"email\": \"heroi@email.com\",\n\t\"password\": \"senhaforte123\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": 250,
+            "_type": "request"
+        },
+        {
+            "_id": "fld_achievements",
+            "parentId": "wrk_1",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "name": "Achievements (Admin)",
+            "description": "Gerenciamento das definições de conquistas",
+            "environment": {},
+            "environmentPropertyOrder": null,
+            "metaSortKey": 100,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_ach_list",
+            "parentId": "fld_achievements",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "url": "{{ _.base_url }}/achievements",
+            "name": "Listar Definições de Conquistas",
+            "description": "",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [],
+            "authentication": {},
+            "metaSortKey": 0,
+            "_type": "request"
+        },
+        {
+            "_id": "req_ach_create",
+            "parentId": "fld_achievements",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "url": "{{ _.base_url }}/achievements",
+            "name": "Criar Definição de Conquista",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"name\": \"Mestre das Masmorras\",\n\t\"xp_required\": 10000,\n\t\"reward_coins\": 2000\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "x-access-token",
+                    "value": "{{ _.admin_token }}"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": 50,
+            "_type": "request"
+        },
+        {
+            "_id": "fld_game_data",
+            "parentId": "wrk_1",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "name": "Game Data (Phases, Bosses, Items)",
+            "description": "Rotas para gerenciar os dados base do jogo",
+            "environment": {},
+            "environmentPropertyOrder": null,
+            "metaSortKey": 200,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_phases_list",
+            "parentId": "fld_game_data",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "url": "{{ _.base_url }}/phases",
+            "name": "Listar Fases",
+            "description": "",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [],
+            "authentication": {},
+            "metaSortKey": 0,
+            "_type": "request"
+        },
+        {
+            "_id": "req_bosses_list",
+            "parentId": "fld_game_data",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "url": "{{ _.base_url }}/boss",
+            "name": "Listar Bosses",
+            "description": "",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [],
+            "authentication": {},
+            "metaSortKey": 50,
+            "_type": "request"
+        },
+        {
+            "_id": "req_items_list",
+            "parentId": "fld_game_data",
+            "modified": 1687383000000,
+            "created": 1687383000000,
+            "url": "{{ _.base_url }}/items",
+            "name": "Listar Itens",
+            "description": "",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [],
+            "authentication": {},
+            "metaSortKey": 100,
+            "_type": "request"
+        }
+    ]
+}

@@ -21,7 +21,6 @@ class Player(db.Model):
     username = db.Column(db.String(30), unique=True, nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(128), nullable=False)
-    level = db.Column(db.Integer, default=1)
     experience = db.Column(db.BigInteger, default=0)
     coins = db.Column(db.BigInteger, default=0)
     created_at = db.Column(db.DateTime, default=utcnow)
@@ -42,10 +41,10 @@ class Player(db.Model):
         return {
             'id': self.id,
             'username': self.username,
-            'level': self.level,
             'experience': self.experience,
             'coins': self.coins,
             'created_at': self.created_at.isoformat(),
+            'saved_at': self.saved_at.isoformat() if self.saved_at else None
         }
 
 
@@ -54,7 +53,7 @@ class Achievement(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
-    xp = db.Column(db.BigInteger, default = 0)
+    xp_required = db.Column(db.BigInteger, default = 0)
     reward_coins = db.Column(db.Integer, default=0)
 
     def to_dict(self):
@@ -62,6 +61,7 @@ class Achievement(db.Model):
             'id': self.id,
             'name': self.name,
             'reward_coins': self.reward_coins,
+            'xp_required': self.xp_required
         }
 
 
@@ -101,6 +101,8 @@ class Phase(db.Model):
             'id': self.id,
             'name': self.name,
             'boss': self.boss.to_dict(),
+            'reward_coins': self.reward_coins,
+            'reward_experience': self.reward_experience
         }
 
 
@@ -146,7 +148,9 @@ class Battle(db.Model):
             'player': self.player.to_dict(),
             'boss': self.boss.to_dict(),
             'result': self.result.value,
-            'created_at': self.created_at.isoformat()
+            'created_at': self.created_at.isoformat(),
+            'reward_coins': self.reward_coins,
+            'reward_experience': self.reward_experience
         }
 
 
