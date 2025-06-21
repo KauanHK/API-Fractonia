@@ -1,8 +1,7 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import get_jwt_identity
 from ..db import db
 from ..models import Player, Item, PlayerAchievement, PhaseProgress, PlayerItem, Achievement
-from ..auth import token_required, admin_required, validate_access
+from ..auth import token_required, admin_required, validate_access, get_current_user_id
 from flask import abort
 from datetime import datetime
 
@@ -136,7 +135,8 @@ def remove_item(id: int, item_id: int):
 
 @bp.route('/<int:id>/achievements')
 @token_required
-def player_achievements(id: int):
+def player_achievements():
+    id = get_current_user_id()
     Player.query.get_or_404(id)
     achievements = PlayerAchievement.query.filter_by(player_id=id).all()
     return [achievement.to_dict() for achievement in achievements]
@@ -197,8 +197,10 @@ def complete_phase(id: int):
 
 @bp.route('/<int:id>/achievements/progress', methods=['POST'])
 @token_required
-def update_achievement_progress(id: int):
+def update_achievement_progress():
     """Atualiza o progresso em uma conquista"""
+
+    id = get_current_user_id()
     
     payload = request.get_json()
     if 'achievement_id' not in payload:

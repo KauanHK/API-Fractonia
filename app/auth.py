@@ -73,7 +73,7 @@ def token_required(f: Callable):
 
         current_user_id = get_current_user_id()
         validate_access(current_user_id, id)
-        return f(*args, **kwargs)
+        return f(id, *args, **kwargs)
 
     return decorated
 

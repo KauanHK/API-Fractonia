@@ -70,13 +70,16 @@ class PlayerAchievement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
     achievement_id = db.Column(db.Integer, db.ForeignKey('achievement.id'), nullable=False)
-    completed_at = db.Column(db.DateTime)
+    completed_at = db.Column(db.DateTime, default = utcnow)
+
+    player = db.relationship('Player', backref='achievements', lazy=True)
+    achievement = db.relationship('Achievement', backref='players', lazy=True)
 
     def to_dict(self):
         return {
             'id': self.id,
-            'player_id': self.player_id,
-            'achievement_id': self.achievement_id,
+            'player': self.player.to_dict(),
+            'achievement': self.achievement.to_dict(),
             'completed_at': self.completed_at.isoformat() if self.completed_at else None
         }
 
@@ -88,11 +91,13 @@ class Phase(db.Model):
     name = db.Column(db.String(30), nullable=False)
     boss_id = db.Column(db.Integer, db.ForeignKey('boss.id'))
 
+    boss = db.relationship('Boss', backref='phases', lazy=True)
+
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
-            'boss_id': self.boss_id,
+            'boss': self.boss.to_dict(),
         }
 
 
@@ -105,11 +110,14 @@ class PhaseProgress(db.Model):
     completed = db.Column(db.Boolean, default=False)
     completed_at = db.Column(db.DateTime)
 
+    player = db.relationship('Player', backref='phase_progress', lazy=True)
+    phase = db.relationship('Phase', backref='progress', lazy=True)
+
     def to_dict(self):
         return {
             'id': self.id,
-            'player_id': self.player_id,
-            'phase_id': self.phase_id,
+            'player': self.player.to_dict(),
+            'phase': self.phase.to_dict(),
             'completed': self.completed,
             'completed_at': self.completed_at.isoformat() if self.completed_at else None
         }
@@ -124,11 +132,14 @@ class Battle(db.Model):
     result = db.Column(db.Enum(ResultType), default=ResultType.WIN)
     created_at = db.Column(db.DateTime, default=utcnow)
 
+    player = db.relationship('Player', backref='battles', lazy=True)
+    boss = db.relationship('Boss', backref='battles', lazy=True)
+
     def to_dict(self):
         return {
             'id': self.id,
-            'player_id': self.player_id,
-            'boss_id': self.boss_id,
+            'player': self.player.to_dict(),
+            'boss': self.boss.to_dict(),
             'result': self.result.value,
             'created_at': self.created_at.isoformat()
         }
@@ -156,14 +167,13 @@ class PlayerItem(db.Model):
     player_id = db.Column(db.Integer, db.ForeignKey('player.id'), primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), primary_key=True)
 
-    def __init__(self, player_id, item_id):
-        self.player_id = player_id
-        self.item_id = item_id
+    player = db.relationship('Player', backref='items', lazy=True)
+    item = db.relationship('Item', backref='players', lazy=True)
 
     def to_dict(self):
         return {
-            'player_id': self.player_id,
-            'item_id': self.item_id,
+            'player': self.player.to_dict(),
+            'item_id': self.item.to_dict()
         }
 
 
