@@ -17,8 +17,9 @@ from app.models import (
 app = create_app()
 
 def seed_database():
+        
     with app.app_context():
-        # Limpar dados existentes (opcional - usar com cuidado!)
+        # Limpar dados existentes
         db.drop_all()
         db.create_all()
 
@@ -65,21 +66,19 @@ def seed_database():
 
         # 5. Criar Jogadores
         players = [
-            Player(username="admin", email="admin@game.com", password="admin123"),
-            Player(username="player1", email="player1@mail.com", password="pass123"),
-            Player(username="player2", email="player2@mail.com", password="pass456")
+            Player(username="admin", email="admin@game.com", password="123"),
+            Player(username="player1", email="player1@mail.com", password="123"),
+            Player(username="player2", email="player2@mail.com", password="123")
         ]
-        # Definir senhas com hash
-        for player in players:
-            player.set_password(player.password)
+        # O método __init__ já cuida da senha, então não é preciso chamar set_password separadamente aqui
         db.session.add_all(players)
         db.session.commit()
 
         # 6. Adicionar Itens aos Jogadores
         player_items = [
-            PlayerItem(player_id=players[1].id, item_id=items[0].id, is_equipped=True),
-            PlayerItem(player_id=players[1].id, item_id=items[2].id, quantity=5),
-            PlayerItem(player_id=players[2].id, item_id=items[3].id, is_equipped=True),
+            PlayerItem(player_id=players[1].id, item_id=items[0].id),
+            PlayerItem(player_id=players[1].id, item_id=items[2].id),
+            PlayerItem(player_id=players[2].id, item_id=items[3].id),
             PlayerItem(player_id=players[2].id, item_id=items[4].id)
         ]
         db.session.add_all(player_items)

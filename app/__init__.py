@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 from flask_migrate import Migrate
-from config import Config
+from .config import Config
 from .db import db
 from .auth import auth_bp
 from .routes import routes_bp
