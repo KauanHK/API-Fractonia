@@ -54,8 +54,8 @@ class Achievement(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
+    xp = db.Column(db.BigInteger, default = 0)
     reward_coins = db.Column(db.Integer, default=0)
-    reward_experience = db.Column(db.BigInteger, default=0)
 
     def to_dict(self):
         return {
