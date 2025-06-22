@@ -1,80 +1,80 @@
 from flask import Blueprint, request, jsonify, abort
 from ..db import db
-from ..models import Achievement
+from ..models import Insignia
 from ..auth import admin_required
 
 
-bp = Blueprint('achievements', __name__, url_prefix = '/achievements')
+bp = Blueprint('insignias', __name__, url_prefix = '/insignias')
 
 
 @bp.route('/', methods = ['GET'])
 def index():
-    achievements = Achievement.query.all()
+    insignias = Insignia.query.all()
     return jsonify({
-        'achievements': [a.to_dict() for a in achievements],
-        'total': len(achievements)
+        'insignias': [i.to_dict() for i in insignias],
+        'total': len(insignias)
     })
 
 
 @bp.route('/', methods=['POST'])
 @admin_required
-def create_achievement():
+def create_insignia():
     data = request.get_json()
     if 'name' not in data or 'xp_required' not in data:
         abort(400, description="Campos 'name' e 'xp_required' são obrigatórios")
 
-    if Achievement.query.filter_by(name=data['name']).first():
+    if Insignia.query.filter_by(name=data['name']).first():
         abort(400, description="Já existe uma conquista com este nome")
 
-    achievement = Achievement(
+    insignia = Insignia(
         name=data['name'],
         xp_required=data['xp_required'],
         reward_coins=data.get('reward_coins', 0)
     )
 
-    db.session.add(achievement)
+    db.session.add(insignia)
     db.session.commit()
 
-    return achievement.to_dict(), 201
+    return insignia.to_dict(), 201
 
 
 @bp.route('/<int:id>', methods = ['GET'])
-def get_achievement(id: int):
-    achievement: Achievement = Achievement.query.get_or_404(id)
-    return achievement.to_dict()
+def get_insignia(id: int):
+    insignia: Insignia = Insignia.query.get_or_404(id)
+    return insignia.to_dict()
 
 
 @bp.route('/<int:id>', methods = ['PUT'])
 @admin_required
-def update_achievement(id: int):
+def update_insignia(id: int):
 
-    achievement = Achievement.query.get_or_404(id)
+    insignia = Insignia.query.get_or_404(id)
     data = request.get_json()
 
-    if 'name' in data and data['name'] != achievement.name:
-        if Achievement.query.filter_by(name=data['name']).first():
+    if 'name' in data and data['name'] != insignia.name:
+        if Insignia.query.filter_by(name=data['name']).first():
             abort(400, description="Já existe uma conquista com este nome")
-        achievement.name = data['name']
+        insignia.name = data['name']
     
     if 'xp_required' in data:
-        achievement.xp_required = data['xp_required']
+        insignia.xp_required = data['xp_required']
 
     if 'reward_coins' in data:
-        achievement.reward_coins = data['reward_coins']
+        insignia.reward_coins = data['reward_coins']
 
     db.session.commit()
 
     return jsonify({
         'message': f'Conquista {id} atualizada com sucesso.',
-        'achievement': achievement.to_dict()
+        'insignia': insignia.to_dict()
     }), 200
 
 
 @bp.route('/<int:id>', methods=['DELETE'])
 @admin_required
-def delete_achievement(id: int):
-    achievement = Achievement.query.get_or_404(id)
-    db.session.delete(achievement)
+def delete_insignia(id: int):
+    insignia = Insignia.query.get_or_404(id)
+    db.session.delete(insignia)
     db.session.commit()
     return jsonify({
         'message': f'Conquista {id} deletada com sucesso.'

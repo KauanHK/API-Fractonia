@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from app import create_app
 from app.db import db
 from app.models import (
-    Player, Item, PlayerItem, Achievement, PlayerAchievement,
+    Player, Item, PlayerItem, Insignia, PlayerInsignia,
     Phase, Boss, PhaseProgress, Battle, ResultType
 )
 
@@ -56,13 +56,13 @@ def seed_database():
         db.session.commit()
 
         # 4. Criar Conquistas com requisito de XP 
-        achievements = [
-            Achievement(name="Iniciante", xp_required=100, reward_coins=50),
-            Achievement(name="Aventureiro", xp_required=500, reward_coins=150),
-            Achievement(name="Veterano", xp_required=1500, reward_coins=300),
-            Achievement(name="Lenda", xp_required=5000, reward_coins=1000)
+        insignias = [
+            Insignia(name="Iniciante", xp_required=100, reward_coins=50),
+            Insignia(name="Aventureiro", xp_required=500, reward_coins=150),
+            Insignia(name="Veterano", xp_required=1500, reward_coins=300),
+            Insignia(name="Lenda", xp_required=5000, reward_coins=1000)
         ]
-        db.session.add_all(achievements)
+        db.session.add_all(insignias)
         db.session.commit()
 
         # 5. Criar Jogadores
@@ -84,13 +84,6 @@ def seed_database():
         db.session.add_all(player_items)
         db.session.commit()
 
-        # 7. Registrar Conquistas para jogadores (opcional, para teste)
-        # A lógica agora concede conquistas automaticamente, mas podemos pré-popular para testes.
-        # Ex: Dando experiência inicial ao jogador 2 e rodando a lógica
-        player2 = players[2]
-        player2.experience = 600 # XP suficiente para a conquista "Aventureiro"
-        # A lógica de concessão será testada via API, não aqui no seed.
-        
         # 8. Registrar Progresso de Fases para jogadores de exemplo
         phase_progress = [
             PhaseProgress(player_id=players[1].id, phase_id=phases[0].id, completed=True),

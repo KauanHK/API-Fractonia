@@ -48,8 +48,8 @@ class Player(db.Model):
         }
 
 
-class Achievement(db.Model):
-    __tablename__ = 'achievement'
+class Insignia(db.Model):
+    __tablename__ = 'insignia'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
@@ -65,22 +65,22 @@ class Achievement(db.Model):
         }
 
 
-class PlayerAchievement(db.Model):
-    __tablename__ = 'player_achievement'
+class PlayerInsignia(db.Model):
+    __tablename__ = 'player_insignia'
 
     id = db.Column(db.Integer, primary_key=True)
     player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
-    achievement_id = db.Column(db.Integer, db.ForeignKey('achievement.id'), nullable=False)
+    insignia_id = db.Column(db.Integer, db.ForeignKey('insignia.id'), nullable=False)
     completed_at = db.Column(db.DateTime, default = utcnow)
 
-    player = db.relationship('Player', backref='achievements', lazy=True)
-    achievement = db.relationship('Achievement', backref='players', lazy=True)
+    player = db.relationship('Player', backref='insignias', lazy=True)
+    insignia = db.relationship('Insignia', backref='players', lazy=True)
 
     def to_dict(self):
         return {
             'id': self.id,
             'player': self.player.to_dict(),
-            'achievement': self.achievement.to_dict(),
+            'insignia': self.insignia.to_dict(),
             'completed_at': self.completed_at.isoformat() if self.completed_at else None
         }
 

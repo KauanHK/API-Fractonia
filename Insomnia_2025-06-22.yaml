@@ -1,0 +1,412 @@
+type: collection.insomnia.rest/5.0
+name: API Jogo - Foco Insígnias
+meta:
+  id: wrk_6f3bafbce852430e9a414341073195f1
+  created: 1750603364649
+  modified: 1750603364649
+  description: ""
+collection:
+  - name: Ações de Progressão
+    meta:
+      id: fld_3d329e79aaeb4c1fb860472b3189a254
+      created: 1687444200000
+      modified: 1750604136307
+      sortKey: 0
+      description: Use estas rotas para fazer um jogador ganhar XP e insígnias.
+    children:
+      - url: "{{ _.base_url }}/players/4/phases"
+        name: Completa uma Fase
+        meta:
+          id: req_3816671310414bbdbbc6822eb61dbb72
+          created: 1687444200000
+          modified: 1750604877393
+          isPrivate: false
+          description: Concede ao jogador 2 as recompensas da fase 1. Isso irá aumentar o
+            XP e pode liberar uma insígnia.
+          sortKey: 0
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"phase_id": 4
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+            id: pair_5b131d72e3234f378ef703fa36b7c56a
+          - name: x-access-token
+            value: "{{ _.admin_token }}"
+            id: pair_bd9f8d4478ae4e61840c03b773397513
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/players/2/battles"
+        name: Vence uma Batalha
+        meta:
+          id: req_d85b675b5d304b659e194a135269ae58
+          created: 1687444200000
+          modified: 1750604804213
+          isPrivate: false
+          description: Registra uma batalha vitoriosa com recompensas independentes. Isso
+            também aumenta o XP e pode liberar insígnias.
+          sortKey: 50
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"result": "win",
+            	"boss_id": 1,
+            	"reward_coins": 25,
+            	"reward_experience": 50
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+            id: pair_f9c7b787562a4511a36185bd7c5db9a0
+          - name: x-access-token
+            value: "{{ _.admin_token }}"
+            id: pair_9e84a0e54e544c7fb0044fa412cb2006
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Gerenciamento (Admin)
+    meta:
+      id: fld_4af50f871d4a4d4791c103f945ce5944
+      created: 1687444200000
+      modified: 1750604138477
+      sortKey: 100
+      description: Rotas para o admin gerenciar os dados do jogo.
+    children:
+      - url: "{{ _.base_url }}/insignias"
+        name: Listar Definições de Insígnias
+        meta:
+          id: req_7ee4b8c1bd0f42fbb15d79d4133cbd4b
+          created: 1687444200000
+          modified: 1750604724708
+          isPrivate: false
+          description: ""
+          sortKey: 0
+        method: GET
+        headers:
+          - name: x-access-token
+            value: "{{ _.admin_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/insignias"
+        name: Criar Nova Insígnia
+        meta:
+          id: req_8c94092bd8b847569e7bc675fb19aa42
+          created: 1687444200000
+          modified: 1750604741650
+          isPrivate: false
+          description: ""
+          sortKey: 50
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"name": "Mestre do Jogo",
+            	"xp_required": 20000,
+            	"reward_coins": 5000
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: x-access-token
+            value: "{{ _.admin_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Autenticação
+    meta:
+      id: fld_9a0415f82b624c739677f34939444f96
+      created: 1687444200000
+      modified: 1750604128694
+      sortKey: -200
+      description: Comece por aqui para obter os tokens.
+    children:
+      - url: "{{ _.base_url }}/auth/login"
+        name: Login (Admin)
+        meta:
+          id: req_38d6f4ea0be544389b4b283ed95b55b4
+          created: 1687444200000
+          modified: 1687444200000
+          isPrivate: false
+          description: Faça o login com o usuário 'admin' e senha '123' (definidos em
+            seed_db.py). Copie o token para a variável 'admin_token'.
+          sortKey: -100
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"username": "admin",
+            	"password": "123"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/auth/login"
+        name: Login (Jogador)
+        meta:
+          id: req_dc198d529caf457b8977179493d0f606
+          created: 1687444200000
+          modified: 1687444200000
+          isPrivate: false
+          description: Faça o login com o usuário 'jogador1' e senha '123'. Copie o token
+            para a variável 'player_token'.
+          sortKey: -50
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"username": "jogador1",
+            	"password": "123"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Rotas Principais (Foco)
+    meta:
+      id: fld_aac17cc6e47248ef9e5e7d0f4420dc30
+      created: 1687444200000
+      modified: 1750604133376
+      sortKey: -100
+      description: As rotas que você pediu para focar.
+    children:
+      - url: "{{ _.base_url }}/players/4/insignia"
+        name: Ver Insígnia Principal
+        meta:
+          id: req_367385763b8c4dcc931b1eba9b2ca45e
+          created: 1687444200000
+          modified: 1750604022511
+          isPrivate: false
+          description: Mostra a insígnia de maior XP que o jogador 2 possui.
+          sortKey: 50
+        method: GET
+        headers:
+          - name: x-access-token
+            value: "{{ _.admin_token }}"
+            id: pair_de6f1e923fa249ec95cd363925f22bdf
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/players/"
+        name: Listar Todos os Jogadores
+        meta:
+          id: req_86a239f4476148e6a48f1a0423c3bda4
+          created: 1687444200000
+          modified: 1750604054837
+          isPrivate: false
+          description: Rota para o administrador ver todos os jogadores cadastrados.
+          sortKey: 150
+        method: GET
+        headers:
+          - name: x-access-token
+            value: "{{ _.admin_token }}"
+            id: pair_77f513c3369f48899c99b90baa8c4d09
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/players/ranking"
+        name: Ver Ranking de Jogadores
+        meta:
+          id: req_d87753843458430b80c6893b430f557f
+          created: 1687444200000
+          modified: 1687444200000
+          isPrivate: false
+          description: Retorna a lista de todos os jogadores, ordenados por experiência.
+          sortKey: 0
+        method: GET
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/players/4/insignias"
+        name: Listar Todas as Insígnias
+        meta:
+          id: req_f0c4eb3615c8434aba4731b19c1a9cff
+          created: 1687444200000
+          modified: 1750604047354
+          isPrivate: false
+          description: Lista todas as insígnias que o jogador 2 já ganhou.
+          sortKey: 100
+        method: GET
+        headers:
+          - name: x-access-token
+            value: "{{ _.admin_token }}"
+            id: pair_13b541f193214e299995ec7e410d8cb4
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Players
+    meta:
+      id: fld_c28a4381e8eb408ea9a4ccb00f6eeed5
+      created: 1750603803101
+      modified: 1750603805851
+      sortKey: -150
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/players"
+        name: Listar Players
+        meta:
+          id: req_33d85aeed16d412394c4e100010a4e3a
+          created: 1750603815130
+          modified: 1750603850080
+          isPrivate: false
+          description: ""
+          sortKey: -1750603815130
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.2.0
+            id: pair_2fd25d9263be47c1b503b996d45fd2f3
+          - id: pair_2feefffe062b4ce5a6836ccf288b540c
+            name: x-access-token
+            value: "{{ _.admin_token }}"
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/players"
+        name: Novo Player
+        meta:
+          id: req_3f9826280647486e9293f5a0cb37b426
+          created: 1750603859858
+          modified: 1750603993655
+          isPrivate: false
+          description: ""
+          sortKey: -1750565836199
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"username": "bob",
+            	"email": "bob@email.com",
+            	"password": "123"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.2.0
+            id: pair_2fd25d9263be47c1b503b996d45fd2f3
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/players/4"
+        name: Listar Player
+        meta:
+          id: req_1ee6f5ea5e714e3697ff85a6201ac151
+          created: 1750604092572
+          modified: 1750604095796
+          isPrivate: false
+          description: ""
+          sortKey: -1750584825664.5
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.2.0
+            id: pair_2fd25d9263be47c1b503b996d45fd2f3
+          - id: pair_2feefffe062b4ce5a6836ccf288b540c
+            name: x-access-token
+            value: "{{ _.admin_token }}"
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_38d26b4218e52f379098e36b3b30074eafa3d913
+    created: 1750603364656
+    modified: 1750603364656
+environments:
+  name: Ambiente Base
+  meta:
+    id: env_cf39761b6c0044e39584a524d1c7a352
+    created: 1687444200000
+    modified: 1750603681668
+    isPrivate: false
+  data:
+    base_url: http://127.0.0.1:5000
+    admin_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImV4cCI6MTc1MDYwNTQ3MH0.6syYgKR5cuICkym1_f3qOwzfw65r-SbHy1fX1bowJPI
+    player_token: COLE_SEU_TOKEN_DE_JOGADOR_AQUI
