@@ -109,8 +109,6 @@ def complete_phase(id: int):
     }), 201
 
 
-# --- OUTRAS ROTAS (sem alterações na lógica principal) ---
-
 @bp.route('/', methods=['POST'])
 def new_player():
     data = request.get_json()
@@ -133,7 +131,7 @@ def new_player():
 @bp.route('/<int:id>', methods=['PUT'])
 @token_required
 def update_player(id: int):
-    validate_access(id)
+    
     player: Player = Player.query.get_or_404(id)
     data = request.get_json()
     if 'username' in data and data['username'] != player.username:
@@ -172,7 +170,6 @@ def delete_player(id: int):
 @bp.route('/<int:id>')
 @token_required
 def player(id: int):
-    validate_access(id)
     player: Player = Player.query.get_or_404(id)
     return player.to_dict()
 
@@ -180,7 +177,6 @@ def player(id: int):
 @bp.route('/<int:id>/items')
 @token_required
 def player_items(id: int):
-    validate_access(id)
     items: list[Item] = PlayerItem.query.filter_by(player_id = id)
     return jsonify({
         'items': [item.to_dict() for item in items],
@@ -191,7 +187,7 @@ def player_items(id: int):
 @bp.route('/<int:id>/items', methods=['POST'])
 @token_required
 def add_player_item(id: int):
-    validate_access(id)
+
     data = request.get_json()
     item_id = data.get('item_id')
     if not item_id:
@@ -209,7 +205,7 @@ def add_player_item(id: int):
 @bp.route('/<int:id>/items/<int:item_id>', methods=['DELETE'])
 @token_required
 def remove_item(id: int, item_id: int):
-    validate_access(id)
+
     player_item = PlayerItem.query.filter_by(player_id=id, item_id=item_id).first_or_404()
     db.session.delete(player_item)
     db.session.commit()
@@ -221,7 +217,7 @@ def remove_item(id: int, item_id: int):
 @bp.route('/<int:id>/achievements')
 @token_required
 def player_achievements(id: int):
-    validate_access(id)
+
     Player.query.get_or_404(id)
     achievements: list[Achievement] = PlayerAchievement.query.filter_by(player_id=id).all()
     return jsonify([achievement.to_dict() for achievement in achievements])
@@ -230,7 +226,7 @@ def player_achievements(id: int):
 @bp.route('/<int:id>/battles', methods=['POST'])
 @token_required
 def record_battle(id: int):
-    validate_access(id)
+
     data = request.get_json()
     if 'result' not in data:
         abort(400, description="O resultado ('result') da batalha é obrigatório")
@@ -250,7 +246,7 @@ def record_battle(id: int):
 @bp.route('/<int:id>/phases', methods=['GET'])
 @token_required
 def player_phases(id: int):
-    validate_access(id)
+
     phases = PhaseProgress.query.filter_by(player_id=id).all()
     return jsonify({
         'phases': [phase.to_dict() for phase in phases],
@@ -261,7 +257,7 @@ def player_phases(id: int):
 @bp.route('/<int:id>/battles', methods=['GET'])
 @token_required
 def player_battles(id: int):
-    validate_access(id)
+
     battles: list[Battle] = Battle.query.filter_by(player_id=id).order_by(Battle.created_at.desc()).all()
     return jsonify({
         'battles': [battle.to_dict() for battle in battles],
