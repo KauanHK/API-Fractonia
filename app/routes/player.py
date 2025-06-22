@@ -131,7 +131,7 @@ def new_player():
 @bp.route('/<int:id>', methods=['PUT'])
 @token_required
 def update_player(id: int):
-    
+
     player: Player = Player.query.get_or_404(id)
     data = request.get_json()
     if 'username' in data and data['username'] != player.username:
@@ -226,20 +226,38 @@ def player_achievements(id: int):
 @bp.route('/<int:id>/battles', methods=['POST'])
 @token_required
 def record_battle(id: int):
-
+    """Registra uma nova batalha e, em caso de vitória, aplica recompensas e verifica conquistas."""
+    
     data = request.get_json()
     if 'result' not in data:
         abort(400, description="O resultado ('result') da batalha é obrigatório")
+
+    player: Player = Player.query.get_or_404(id)
+    
+    reward_coins = data.get('reward_coins', 0)
+    reward_experience = data.get('reward_experience', 0)
+
     battle = Battle(
-        player_id=id,
-        result=data['result'],
-        boss_id=data.get('boss_id')
+        player_id = id,
+        result = data['result'],
+        boss_id = data.get('boss_id'),
+        reward_coins = reward_coins,
+        reward_experience = reward_experience
     )
+    
+    # Se o jogador venceu, aplica as recompensas e verifica conquistas
+    if battle.result == ResultType.WIN:
+        player.coins += reward_coins
+        player.experience += reward_experience
+        _check_and_grant_achievements(player)
+
     db.session.add(battle)
     db.session.commit()
+
     return jsonify({
-        'message': 'Batalha registrada com sucesso',
-        'battle': battle.to_dict()
+        'message': 'Batalha registrada com sucesso!',
+        'battle_details': battle.to_dict(),
+        'player_status': player.to_dict()
     }), 201
 
 
