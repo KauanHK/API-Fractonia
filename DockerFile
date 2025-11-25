@@ -1,30 +1,27 @@
-# Usa imagem base oficial do Python
 FROM python:3.11-slim
 
-# Evita output em buffer
 ENV PYTHONUNBUFFERED=1
 
-# Cria diretório da aplicação
 WORKDIR /app
 
-# Copia requirements primeiro (melhor cache)
+# Copia dependências primeiro
 COPY requirements.txt .
 
-# Instala dependências
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia todo o código da aplicação
+# Copia projeto inteiro
 COPY . .
 
-# Variáveis do Flask
-ENV FLASK_APP=app.py
-ENV FLASK_ENV=production
+# Configurações de ambiente
+ENV FLASK_APP="app"
+ENV FLASK_RUN_HOST="0.0.0.0"
+ENV FLASK_RUN_PORT="5000"
+ENV FLASK_ENV="production"
 
-# Rodar migrations automaticamente ao iniciar o container
+# Aplica migrations
 RUN flask db upgrade || true
 
-# Porta exposta
-EXPOSE 8000
+EXPOSE 5000
 
-# Comando de inicialização
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]
+# Inicia o servidor usando Gunicorn com Factory Pattern
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:create_app()"]
